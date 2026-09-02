@@ -1,0 +1,344 @@
+/* ============================================================
+   SCA editor design system — shared primitives
+   A thin, namespaced layer every route can compose from:
+   reading width · section rhythm · label/headline/lede ·
+   card system (maroon/cream/charcoal/gold) · numerals ·
+   metadata · CTAs · compact top navigation.
+   Additive only: nothing here redefines an existing selector.
+   ============================================================ */
+
+/* ---------- layout ---------- */
+
+.sc-container {
+  width: min(1140px, 92vw);
+  margin-inline: auto;
+}
+
+.sc-section {
+  padding: clamp(72px, 10vw, 128px) 0;
+}
+
+/* ---------- type ---------- */
+
+.sc-label {
+  font-family: var(--font-jakarta);
+  font-size: clamp(10px, 1.1vw, 13px);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.sc-headline {
+  margin-top: 12px;
+  font-family: var(--font-archivo);
+  font-variation-settings: "wdth" 125;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(32px, 5vw, 58px);
+  line-height: 1.02;
+  color: var(--color-warm-white);
+}
+
+.sc-lede {
+  margin-top: 14px;
+  max-width: 640px;
+  font-family: var(--font-body);
+  font-size: clamp(14px, 1.2vw, 16px);
+  line-height: 1.7;
+  color: var(--color-sand);
+}
+
+.sc-rule {
+  width: 64px;
+  height: 1px;
+  margin-top: 22px;
+  background: linear-gradient(90deg, transparent, var(--color-gold), transparent);
+}
+
+/* ---------- card system ---------- */
+
+.sc-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  padding: clamp(22px, 2.6vw, 30px);
+  border: 1px solid rgba(252, 240, 214, 0.1);
+  border-radius: 18px;
+  background: rgba(252, 240, 214, 0.04);
+  color: var(--color-sand);
+}
+
+.sc-card--maroon {
+  background: linear-gradient(140deg, var(--color-maroon) 0%, #2c060d 60%, #1a0409 100%);
+  border-color: rgba(199, 155, 58, 0.45);
+  box-shadow: 0 0 48px rgba(199, 155, 58, 0.14);
+}
+
+.sc-card--cream {
+  color: #453729;
+  background: linear-gradient(180deg, #fdf6e8 0%, var(--color-ivory) 46%, #f4ead2 100%);
+  border-color: #e3d5b8;
+}
+
+.sc-card--charcoal {
+  background: rgba(18, 15, 13, 0.9);
+  border-color: rgba(252, 240, 214, 0.08);
+}
+
+.sc-card--gold {
+  border-color: rgba(199, 155, 58, 0.45);
+  background: radial-gradient(120vmax 40vmax at 50% 0%, rgba(180, 0, 35, 0.2) 0%, rgba(10, 8, 6, 0.2) 60%);
+}
+
+/* giant numeral (dates / numbers) */
+.sc-num {
+  font-family: var(--font-accent);
+  font-size: clamp(64px, 9vw, 120px);
+  line-height: 0.9;
+  letter-spacing: 0.04em;
+  color: var(--color-gold);
+}
+
+.sc-meta {
+  font-family: var(--font-jakarta);
+  font-size: 10.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(216, 205, 182, 0.75);
+}
+
+/* ---------- CTA ---------- */
+
+.sc-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  padding: 14px 22px;
+  border: 1px solid var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-cream);
+  font-family: var(--font-jakarta);
+  font-size: 11.5px;
+  line-height: 1;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.sc-cta:hover {
+  border-color: var(--color-gold);
+  background: #d0002a;
+}
+
+.sc-cta--ghost {
+  border-color: rgba(199, 155, 58, 0.5);
+  background: transparent;
+  color: var(--color-gold);
+}
+
+.sc-cta--ghost:hover {
+  background: rgba(199, 155, 58, 0.1);
+}
+
+.sc-cta .sc-cta-arrow {
+  transition: transform 0.2s ease;
+}
+
+.sc-cta:hover .sc-cta-arrow {
+  transform: translateX(4px);
+}
+
+.sc-cta:disabled,
+.sc-cta[aria-disabled="true"] {
+  background: rgba(74, 10, 20, 0.28);
+  border-color: rgba(74, 10, 20, 0.3);
+  color: rgba(69, 53, 41, 0.8);
+  cursor: not-allowed;
+}
+
+.sc-cta:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+}
+
+/* ---------- compact top navigation ---------- */
+
+.sc-nav {
+  position: fixed;
+  inset-inline: 0;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px clamp(16px, 4vw, 40px);
+  background: linear-gradient(180deg, rgba(10, 8, 6, 0.92) 0%, rgba(10, 8, 6, 0.72) 55%, transparent 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.sc-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.sc-nav-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+.sc-nav-title {
+  display: block;
+  font-family: var(--font-accent);
+  font-size: clamp(19px, 2vw, 26px);
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-warm-white);
+}
+
+.sc-nav-sub {
+  display: block;
+  margin-top: 4px;
+  font-family: var(--font-body);
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.sc-nav-links {
+  display: none;
+  align-items: center;
+  gap: clamp(14px, 2.4vw, 28px);
+  margin-left: auto;
+}
+
+.sc-nav-link {
+  position: relative;
+  padding: 6px 2px;
+  font-family: var(--font-jakarta);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(252, 240, 214, 0.72);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.sc-nav-link:hover {
+  color: var(--color-warm-white);
+}
+
+.sc-nav-link--active {
+  color: var(--color-gold);
+}
+
+.sc-nav-link--active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--color-gold);
+}
+
+.sc-nav-link:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.sc-nav-emblem {
+  display: none;
+  width: clamp(44px, 5vw, 64px);
+  height: auto;
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .sc-nav-links { display: flex; }
+  .sc-nav-logo { width: 48px; height: 48px; }
+  .sc-nav-emblem { display: block; }
+}
+
+/* ---------- reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .sc-cta,
+  .sc-cta .sc-cta-arrow,
+  .sc-nav {
+    transition: none;
+  }
+  .sc-cta .sc-cta-arrow {
+    transform: none !important;
+  }
+}
+
+/* ---------- fixed SCA brand lockup (logo + wordmark, no nav bar) ---------- */
+
+.sc-brand-left {
+  position: fixed;
+  top: 22px;
+  left: 22px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  pointer-events: none;
+}
+
+.sc-brand-logo {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.sc-brand-word {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+
+.sc-brand-emblem {
+  position: fixed;
+  top: 16px;
+  right: 18px;
+  z-index: 60;
+  width: clamp(64px, 8vw, 128px);
+  height: auto;
+  opacity: 0.92;
+  pointer-events: none;
+}
+
+@media (min-width: 768px) {
+  .sc-brand-logo { width: 48px; height: 48px; }
+}
+
+@media (max-width: 767px) {
+  .sc-brand-emblem { display: none; }
+  .sc-brand-left {
+    top: 16px;
+    left: 16px;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 14px;
+    background: rgba(10, 8, 6, 0.62);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(201, 165, 74, 0.18);
+    box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.6);
+  }
+}

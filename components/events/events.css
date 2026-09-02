@@ -1,0 +1,730 @@
+/* ============================================================
+   Events — /events
+   Dark cinematic environment + muted gold.
+   Engine: events-page.tsx
+   ============================================================ */
+
+.ev {
+  position: relative;
+  z-index: 10;
+  background: var(--color-night);
+  overflow-x: hidden;
+  padding-bottom: 150px; /* clear the fixed bottom dock */
+}
+
+.ev > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* film grain over the whole page (Baaz-style, like the archive) */
+.ev::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+.ev-rule {
+  width: 64px;
+  height: 1px;
+  margin-top: 22px;
+  background: linear-gradient(90deg, transparent, var(--color-gold), transparent);
+}
+
+/* ============================================================
+   1 · Hero — Events · Durga Puja 2026
+   ============================================================ */
+
+.ev-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+  text-align: center;
+  background: radial-gradient(
+    120vmax 90vmax at 50% 28%,
+    #1c140d 0%,
+    var(--color-night) 62%
+  );
+}
+
+.ev-hero-inner {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 1100px;
+  padding: 30px 24px 120px;
+}
+
+.ev-hero-bn {
+  position: absolute;
+  z-index: 1;
+  right: -0.06em;
+  bottom: -0.04em;
+  font-family: var(--font-tiro);
+  font-size: clamp(120px, 30vmin, 340px);
+  line-height: 1;
+  color: rgba(180, 0, 35, 0.2);
+  user-select: none;
+  pointer-events: none;
+}
+
+.ev-kicker {
+  font-family: var(--font-jakarta);
+  font-size: clamp(10px, 1.1vw, 14px);
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.ev-hero-title {
+  margin-top: 14px;
+  font-family: var(--font-accent);
+  font-size: clamp(96px, 22vw, 260px);
+  line-height: 0.82;
+  letter-spacing: 0.02em;
+  color: var(--color-warm-white);
+}
+
+.ev-hero-sub {
+  margin-top: 10px;
+  font-family: var(--font-archivo);
+  font-variation-settings: "wdth" 125;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(26px, 4.4vw, 54px);
+  line-height: 1;
+  color: var(--color-cream);
+}
+
+.ev-hero-dates {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.ev-hero-dates strong {
+  font-family: var(--font-accent);
+  font-size: clamp(42px, 9vw, 104px);
+  line-height: 1;
+  letter-spacing: 0.05em;
+  color: var(--color-gold);
+}
+
+.ev-hero-tags {
+  margin-top: 26px;
+  font-family: var(--font-jakarta);
+  font-size: clamp(10px, 1.2vw, 14px);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--color-sand);
+}
+
+.ev-hero-loc {
+  margin-top: 14px;
+  font-family: var(--font-jakarta);
+  font-size: clamp(9px, 1vw, 12px);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: rgba(216, 205, 182, 0.6);
+}
+
+.ev-hero-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 5px;
+  z-index: 3;
+  background: linear-gradient(
+    90deg,
+    var(--color-maroon),
+    var(--color-primary) 30%,
+    var(--color-primary) 70%,
+    var(--color-maroon)
+  );
+}
+
+.ev-corner {
+  position: absolute;
+  width: 36px;
+  height: 36px;
+  border: 0 solid var(--color-gold);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 2;
+}
+.ev-corner--tl { left: 22px; top: 108px; border-left-width: 1px; border-top-width: 1px; }
+.ev-corner--tr { right: 22px; top: 108px; border-right-width: 1px; border-top-width: 1px; }
+.ev-corner--bl { left: 22px; bottom: 96px; border-left-width: 1px; border-bottom-width: 1px; }
+.ev-corner--br { right: 22px; bottom: 96px; border-right-width: 1px; border-bottom-width: 1px; }
+
+/* ============================================================
+   2 · Venue — Where We Gather
+   ============================================================ */
+
+.ev-venue {
+  position: relative;
+  text-align: center;
+  padding: clamp(90px, 12vh, 160px) 0 clamp(70px, 8vh, 110px);
+  overflow: hidden;
+}
+.ev-venue-address {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ev-venue-address strong {
+  font-family: var(--font-archivo);
+  font-variation-settings: "wdth" 125;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(28px, 4.6vw, 58px);
+  line-height: 1.02;
+  color: var(--color-warm-white);
+}
+.ev-venue-address span {
+  font-family: var(--font-jakarta);
+  font-size: clamp(12px, 1.4vw, 16px);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+.ev-venue-note {
+  margin-top: 26px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: rgba(216, 205, 182, 0.7);
+}
+
+/* ============================================================
+   3 · Event Schedule
+   ============================================================ */
+
+.ev-schedule {
+  position: relative;
+  padding: clamp(72px, 10vw, 140px) 0 clamp(40px, 6vw, 72px);
+}
+
+.ev-container-schedule {
+  width: min(1200px, 92vw);
+  margin-inline: auto;
+}
+
+.ev-sec-kicker {
+  font-family: var(--font-jakarta);
+  font-size: clamp(11px, 1.1vw, 13px);
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.ev-schedule-title {
+  margin-top: 12px;
+  font-family: var(--font-archivo);
+  font-variation-settings: "wdth" 125;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(32px, 5vw, 58px);
+  line-height: 1.02;
+  color: var(--color-warm-white);
+}
+
+/* ---------- category block ---------- */
+
+.ev-cat {
+  margin-top: clamp(64px, 8vw, 110px);
+  padding: 0 clamp(16px, 4vw, 32px);
+  width: min(1400px, 100%);
+  margin-inline: auto;
+}
+
+.ev-cat-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.ev-cat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(201, 165, 74, 0.45);
+  color: var(--color-gold);
+  flex: 0 0 auto;
+}
+.ev-cat-title {
+  font-family: var(--font-archivo);
+  font-variation-settings: "wdth" 125;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(22px, 3vw, 34px);
+  line-height: 1.05;
+  color: var(--color-warm-white);
+}
+.ev-cat-range {
+  margin-top: 4px;
+  font-family: var(--font-jakarta);
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+/* ---------- BookMyShow-style card grid ---------- */
+
+.ev-card-grid {
+  display: grid;
+  gap: 28px;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+}
+
+/* mobile carousel dots — hidden on desktop, revealed at the mobile breakpoint */
+.ev-carousel-dots {
+  display: none;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+}
+.ev-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(201, 165, 74, 0.4);
+  background: rgba(201, 165, 74, 0.22);
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.ev-dot--active {
+  background: var(--color-gold);
+  transform: scale(1.3);
+}
+.ev-dot:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.ev-card {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+}
+
+.ev-card-poster {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5; /* 1080:1350 portrait — real posters land here later */
+  border: 1px solid rgba(252, 240, 214, 0.14);
+  border-radius: 12px;
+  overflow: hidden;
+  background:
+    radial-gradient(120% 120% at 50% 0%, rgba(180, 0, 35, 0.22) 0%, transparent 55%),
+    linear-gradient(180deg, #171310 0%, #0d0a08 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  color: var(--color-cream);
+  transition:
+    border-color 0.25s ease,
+    transform 0.25s ease;
+}
+.ev-card-poster:hover,
+.ev-card-poster:focus-visible {
+  border-color: rgba(201, 165, 74, 0.6);
+  transform: translateY(-3px);
+  outline: none;
+}
+.ev-card-poster:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+.ev-card-poster-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.4;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+.ev-card-poster-label {
+  font-family: var(--font-jakarta);
+  font-size: 10px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: rgba(216, 205, 182, 0.5);
+}
+.ev-card-poster-cat {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-family: var(--font-jakarta);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-cream);
+  background: rgba(10, 8, 6, 0.6);
+  border: 1px solid rgba(201, 165, 74, 0.35);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.ev-card-info {
+  padding: 14px 4px 0;
+}
+.ev-card-date {
+  font-family: var(--font-jakarta);
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+.ev-card-title {
+  margin-top: 6px;
+  font-family: var(--font-archivo);
+  font-variation-settings: "wdth" 125;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: clamp(15px, 1.6vw, 19px);
+  line-height: 1.1;
+  color: var(--color-warm-white);
+}
+.ev-card-summary {
+  margin-top: 6px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-sand);
+}
+.ev-card-open {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  border-bottom: 1px solid rgba(201, 165, 74, 0.5);
+  color: var(--color-gold);
+  font-family: var(--font-jakarta);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.ev-card-open:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+}
+
+/* ---------- cultural highlight + amenities ---------- */
+
+.ev-culture-note {
+  margin-top: 34px;
+  border: 1px solid rgba(201, 165, 74, 0.4);
+  border-radius: 16px;
+  background: radial-gradient(
+    120vmax 40vmax at 50% 0%,
+    rgba(180, 0, 35, 0.28) 0%,
+    rgba(10, 8, 6, 0.2) 60%
+  );
+  padding: 28px 30px;
+  text-align: center;
+}
+.ev-culture-note strong {
+  display: block;
+  font-family: var(--font-archivo);
+  font-variation-settings: "wdth" 125;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(20px, 2.6vw, 34px);
+  line-height: 1.05;
+  color: var(--color-warm-white);
+}
+.ev-culture-note span {
+  display: block;
+  margin-top: 8px;
+  font-family: var(--font-jakarta);
+  font-size: 11px;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.ev-amenities {
+  margin-top: 26px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+.ev-amenity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 16px;
+  border: 1px solid rgba(252, 240, 214, 0.12);
+  border-radius: 10px;
+  background: rgba(252, 240, 214, 0.04);
+  font-family: var(--font-jakarta);
+  font-size: 10.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--color-sand);
+}
+.ev-amenity-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-gold);
+}
+.ev-amenity svg {
+  flex: 0 0 auto;
+  color: var(--color-gold);
+}
+
+/* ---------- important rituals ---------- */
+
+.ev-rituals {
+  margin-top: 52px;
+}
+.ev-rituals-grid {
+  margin-top: 22px;
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.ev-ritual {
+  height: 100%;
+  background: linear-gradient(180deg, rgba(252, 240, 214, 0.05) 0%, rgba(252, 240, 214, 0.02) 100%);
+  border: 1px solid rgba(252, 240, 214, 0.12);
+  border-top: 2px solid rgba(201, 165, 74, 0.5);
+  border-radius: 16px;
+  padding: 24px 24px 26px;
+}
+.ev-ritual--emphasis {
+  background: linear-gradient(140deg, var(--color-maroon) 0%, #2c060d 70%, #1a0409 100%);
+  border-color: rgba(201, 165, 74, 0.45);
+  box-shadow: 0 0 48px rgba(201, 165, 74, 0.16);
+}
+.ev-ritual-title {
+  font-family: var(--font-archivo);
+  font-variation-settings: "wdth" 125;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(18px, 1.8vw, 23px);
+  line-height: 1.05;
+  color: var(--color-warm-white);
+}
+.ev-ritual--emphasis .ev-ritual-title { color: var(--color-gold); }
+.ev-ritual-body {
+  margin-top: 10px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-sand);
+}
+.ev-ritual--emphasis .ev-ritual-body { color: rgba(252, 240, 214, 0.86); }
+.ev-ritual-meta {
+  margin-top: 14px;
+  font-family: var(--font-jakarta);
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+/* ============================================================
+   4 · Event detail modal
+   ============================================================ */
+
+.ev-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(10, 8, 6, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+
+.ev-modal-card {
+  position: relative;
+  width: min(560px, 100%);
+  max-height: 86vh;
+  overflow-y: auto;
+  background: #fffdf4;
+  color: #453729;
+  border: 1px solid #e3d5b8;
+  border-top: 3px solid var(--color-primary);
+  border-radius: 18px;
+  box-shadow:
+    0 60px 120px -40px rgba(0, 0, 0, 0.85),
+    inset 0 0 120px rgba(74, 10, 20, 0.04);
+  padding: 34px 30px 30px;
+  cursor: default;
+}
+
+.ev-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid rgba(74, 10, 20, 0.2);
+  background: rgba(74, 10, 20, 0.05);
+  color: var(--color-maroon);
+  cursor: pointer;
+}
+.ev-modal-close:hover { background: rgba(74, 10, 20, 0.1); }
+.ev-modal-close:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.ev-modal-cat {
+  display: inline-block;
+  font-family: var(--font-jakarta);
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: 999px;
+  color: var(--color-maroon);
+  border: 1px solid rgba(74, 10, 20, 0.25);
+}
+.ev-modal-cat--religious {
+  color: var(--color-primary-deep);
+  border-color: rgba(180, 0, 35, 0.35);
+  background: rgba(180, 0, 35, 0.06);
+}
+.ev-modal-cat--cultural {
+  color: var(--color-maroon);
+  border-color: rgba(74, 10, 20, 0.25);
+  background: rgba(74, 10, 20, 0.04);
+}
+.ev-modal-date {
+  margin-top: 16px;
+  font-family: var(--font-jakarta);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(74, 10, 20, 0.6);
+}
+.ev-modal-title {
+  margin-top: 8px;
+  font-family: var(--font-archivo);
+  font-variation-settings: "wdth" 125;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(26px, 4.4vw, 40px);
+  line-height: 1.02;
+  color: var(--color-ink);
+}
+
+.ev-modal-rule {
+  width: 64px;
+  height: 1px;
+  margin-top: 18px;
+  background: linear-gradient(90deg, transparent, var(--color-primary), transparent);
+}
+
+.ev-modal-body {
+  margin-top: 22px;
+  display: grid;
+  gap: 18px;
+}
+.ev-modal-head {
+  font-family: var(--font-jakarta);
+  font-size: 10.5px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-maroon);
+  margin-bottom: 8px;
+}
+.ev-modal-line {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.65;
+  color: #453729;
+}
+.ev-modal-line + .ev-modal-line {
+  margin-top: 4px;
+}
+
+/* ============================================================
+   Reduced motion
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .ev *,
+  .ev *::before,
+  .ev *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001s !important;
+  }
+}
+
+/* ============================================================
+   Responsive polish
+   ============================================================ */
+
+@media (max-width: 767px) {
+  .ev-corner--tl, .ev-corner--tr { top: 84px; }
+
+  /* ---- mobile event carousel: horizontal swipe, one card per snap ---- */
+  .ev-carousel {
+    margin-inline: -16px;
+  }
+  .ev-card-grid.ev-card-grid {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 16px;
+    padding: 6px 16px 10px;
+    margin: 0;
+    scrollbar-width: none;
+  }
+  .ev-card-grid.ev-card-grid::-webkit-scrollbar {
+    display: none;
+  }
+  .ev-card-grid.ev-card-grid .ev-card {
+    flex: 0 0 76vw;
+    max-width: 76vw;
+    scroll-snap-align: center;
+  }
+  .ev-card-grid.ev-card-grid .ev-card > * {
+    min-width: 0;
+  }
+  .ev-carousel-dots {
+    display: flex;
+  }
+}
