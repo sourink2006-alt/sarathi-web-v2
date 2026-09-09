@@ -6,14 +6,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { initSharedLenis, destroySharedLenis } from "@/lib/lenis";
 import { HeroContent } from "@/components/home/hero-content";
 
-const LAYER_IMAGES = [
-  {
-    layer: "1",
-    src: "/images/hero-bg-1920.jpg",
-    alt: "Durga Puja celebration banner",
-  },
-];
-
 export function ParallaxComponent() {
   const parallaxRef = useRef<HTMLDivElement>(null);
 
@@ -35,18 +27,19 @@ export function ParallaxComponent() {
       <section className="parallax__header">
         <div className="parallax__visuals">
           <div className="parallax__layers">
-            {LAYER_IMAGES.map((img) => (
+            <picture className="parallax__layer-picture" data-parallax-layer="1">
+              <source media="(max-width: 767px)" srcSet="/images/hero-bg.jpg" />
+              <source media="(min-width: 768px)" srcSet="/images/hero-bg-1920.jpg" />
               <img
-                key={img.layer}
-                src={img.src}
+                src="/images/hero-bg-1920.jpg"
                 loading="eager"
                 width={1920}
                 height={1048}
-                data-parallax-layer={img.layer}
-                alt={img.alt}
+                data-parallax-layer="1"
+                alt="Durga Puja celebration banner"
                 className="parallax__layer-img"
               />
-            ))}
+            </picture>
             <div className="parallax__overlay"></div>
             <div className="parallax__layer-title">
               <HeroContent />

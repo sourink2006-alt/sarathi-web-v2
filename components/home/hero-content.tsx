@@ -33,7 +33,7 @@ function getTimeLeft(target: Date): TimeLeft {
 function TimeCard({ value, label }: { value: number; label: string }) {
   const text = String(value).padStart(2, "0");
   return (
-    <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-cream/10 bg-cream/[0.06] px-1 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-md sm:gap-2 sm:py-4">
+    <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-cream/10 bg-[#16110c]/92 px-1 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.35)] md:bg-cream/[0.06] md:backdrop-blur-md sm:gap-2 sm:py-4">
       <motion.span
         key={text}
         initial={{ y: 14, opacity: 0 }}
@@ -58,17 +58,55 @@ export function HeroContent() {
     seconds: 0,
     finished: false,
   });
+  const containerRef = useRef<HTMLDivElement>(null);
   const gridRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const update = () => setTimeLeft(getTimeLeft(COUNTDOWN_TARGET));
-    const timeout = setTimeout(update, 0);
-    const id = setInterval(update, 1000);
-    return () => {
-      clearTimeout(timeout);
-      clearInterval(id);
+    const el = containerRef.current;
+    if (!el) return;
+
+    let intervalId: ReturnType<typeof setInterval> | null = null;
+
+    const startTimer = () => {
+      setTimeLeft(getTimeLeft(COUNTDOWN_TARGET));
+      if (!intervalId) {
+        intervalId = setInterval(() => {
+          setTimeLeft(getTimeLeft(COUNTDOWN_TARGET));
+        }, 1000);
+      }
     };
+
+    const stopTimer = () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    if (typeof IntersectionObserver !== "undefined") {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+          if (entry.isIntersecting) {
+            startTimer();
+          } else {
+            stopTimer();
+          }
+        },
+        { threshold: 0 }
+      );
+
+      observer.observe(el);
+
+      return () => {
+        stopTimer();
+        observer.disconnect();
+      };
+    } else {
+      startTimer();
+      return () => stopTimer();
+    }
   }, []);
 
   useEffect(() => {
@@ -78,12 +116,15 @@ export function HeroContent() {
     const textBlock = textRef.current;
     if (!textBlock) return;
 
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
+
     const tween = gsap.fromTo(
       textBlock,
       { y: 0 },
       {
-        y: -120,
+        y: isMobile ? -45 : -120,
         ease: "none",
+        force3D: true,
         scrollTrigger: {
           trigger: ".parallax__header",
           start: "top top",
@@ -106,13 +147,18 @@ export function HeroContent() {
     const cards = gridRef.current?.children;
     if (!cards || cards.length !== 4) return;
 
-    const offsets = [-120, -60, 60, 120];
+    const isMobile = window.matchMedia("(max-width: 767px)").matches;
+    const desktopOffsets = [-120, -60, 60, 120];
+    const mobileOffsets = [-10, -4, 4, 10];
+
     const tween = gsap.fromTo(
       cards,
-      { x: 0 },
+      { x: 0, y: 0 },
       {
-        x: (index) => offsets[index],
+        x: (index) => (isMobile ? mobileOffsets[index] : desktopOffsets[index]),
+        y: isMobile ? -14 : 0,
         ease: "none",
+        force3D: true,
         scrollTrigger: {
           trigger: ".parallax__header",
           start: "top top",
@@ -129,7 +175,10 @@ export function HeroContent() {
   }, []);
 
   return (
-    <div className="flex w-full max-w-3xl flex-col items-center gap-4 px-4 text-center sm:gap-6">
+    <div
+      ref={containerRef}
+      className="flex w-full max-w-3xl flex-col items-center gap-4 px-4 text-center sm:gap-6"
+    >
       <div
         ref={textRef}
         className="flex w-full flex-col items-center gap-3 sm:gap-4"

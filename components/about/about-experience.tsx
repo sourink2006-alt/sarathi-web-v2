@@ -1,11 +1,12 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, useSyncExternalStore } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { initSharedLenis, destroySharedLenis } from "@/lib/lenis";
 import { StorySurface } from "./story-surface";
 import { CHAPTERS } from "./story-data";
+import { AboutMobileExperience } from "./about-mobile";
 
 /*
  * The Sarathi Archive — animation engine.
@@ -38,7 +39,7 @@ const easeOutPower2 = (t: number) => 1 - (1 - t) * (1 - t);
 const ENTRY_END = 0.07;
 const JOURNEY_END = 0.89;
 
-export function AboutExperience() {
+function AboutDesktopExperience() {
   const rootRef = useRef<HTMLElement>(null);
 
   /*
@@ -60,6 +61,10 @@ export function AboutExperience() {
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       // CSS renders a static composed archive; no pinning, no camera.
+      return;
+    }
+
+    if (window.matchMedia("(max-width: 767px)").matches) {
       return;
     }
 
@@ -229,4 +234,35 @@ export function AboutExperience() {
       <StorySurface />
     </section>
   );
+}
+
+function subscribeToMobile(callback: () => void) {
+  const mql = window.matchMedia("(max-width: 767px)");
+  mql.addEventListener("change", callback);
+  return () => mql.removeEventListener("change", callback);
+}
+
+function getMobileSnapshot() {
+  return window.matchMedia("(max-width: 767px)").matches;
+}
+
+function getMobileServerSnapshot() {
+  return true;
+}
+
+export function AboutExperience() {
+  const isMobile = useSyncExternalStore(
+    subscribeToMobile,
+    getMobileSnapshot,
+    getMobileServerSnapshot,
+  );
+
+  // On mobile screens (< 768px) and during SSR: render the lightweight mobile About experience.
+  // AboutDesktopExperience is NEVER rendered or mounted on mobile, preventing GSAP ScrollTrigger
+  // 3D pinning, camera loops, and heavy board layout.
+  if (isMobile) {
+    return <AboutMobileExperience />;
+  }
+
+  return <AboutDesktopExperience />;
 }
