@@ -10,6 +10,8 @@ export function ParallaxComponent() {
   const parallaxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (window.matchMedia("(max-width: 767px)").matches) return;
+
     gsap.registerPlugin(ScrollTrigger);
     if (typeof window !== "undefined") {
       (window as unknown as Record<string, unknown>).ScrollTrigger = ScrollTrigger;

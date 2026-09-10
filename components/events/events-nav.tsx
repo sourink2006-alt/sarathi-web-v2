@@ -1,20 +1,40 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import { Calendar, Home, Users, Ticket } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { BottomDock, type DockLink } from "@/components/layout/bottom-dock";
 import { scrollToLenis } from "@/lib/lenis";
 import { useScrollSection } from "@/lib/use-scroll-section";
 
+function subscribeToMobile(callback: () => void) {
+  const mql = window.matchMedia("(max-width: 767px)");
+  mql.addEventListener("change", callback);
+  return () => mql.removeEventListener("change", callback);
+}
+
+function getMobileSnapshot() {
+  return window.matchMedia("(max-width: 767px)").matches;
+}
+
+function getMobileServerSnapshot() {
+  return false;
+}
+
 export function EventsNav() {
   const router = useRouter();
+  const isMobile = useSyncExternalStore(
+    subscribeToMobile,
+    getMobileSnapshot,
+    getMobileServerSnapshot,
+  );
   const section = useScrollSection(["events", "booking"]);
 
   const go = (selector: string, href: string) => {
     if (!scrollToLenis(selector)) router.push(href);
   };
 
-  const LINKS: DockLink[] = [
+  const desktopLinks: DockLink[] = [
     {
       label: "Home",
       icon: <Home size={20} strokeWidth={1.75} />,
@@ -39,5 +59,25 @@ export function EventsNav() {
     },
   ];
 
-  return <BottomDock items={LINKS} />;
+  const mobileLinks: DockLink[] = [
+    {
+      label: "Home",
+      icon: <Home size={20} strokeWidth={1.75} />,
+      onClick: () => router.push("/"),
+    },
+    {
+      label: "Events",
+      icon: <Calendar size={20} strokeWidth={1.75} />,
+      onClick: () => go('[data-section="events"]', "/events"),
+      active: section === "events",
+    },
+    {
+      label: "Booking",
+      icon: <Ticket size={20} strokeWidth={1.75} />,
+      onClick: () => go('[data-section="booking"]', "/booking"),
+      active: section === "booking",
+    },
+  ];
+
+  return <BottomDock items={isMobile ? mobileLinks : desktopLinks} />;
 }

@@ -250,18 +250,23 @@ function getMobileServerSnapshot() {
   return true;
 }
 
-export function AboutExperience() {
+export function AboutExperience({
+  showMobileFallback = false,
+}: {
+  showMobileFallback?: boolean;
+} = {}) {
   const isMobile = useSyncExternalStore(
     subscribeToMobile,
     getMobileSnapshot,
     getMobileServerSnapshot,
   );
 
-  // On mobile screens (< 768px) and during SSR: render the lightweight mobile About experience.
-  // AboutDesktopExperience is NEVER rendered or mounted on mobile, preventing GSAP ScrollTrigger
-  // 3D pinning, camera loops, and heavy board layout.
+  // On mobile screens (< 768px):
+  // The expensive cinematic About component is NEVER mounted or initialized.
+  // On the homepage, About returns null (completely omitted).
+  // If /about is visited directly on mobile, it renders the lightweight fallback without GSAP/3D.
   if (isMobile) {
-    return <AboutMobileExperience />;
+    return showMobileFallback ? <AboutMobileExperience /> : null;
   }
 
   return <AboutDesktopExperience />;

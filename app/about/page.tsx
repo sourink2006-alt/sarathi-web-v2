@@ -12,7 +12,7 @@ export default function AboutPage() {
   return (
     <>
       <main className="relative w-full">
-        <AboutExperience />
+        <AboutExperience showMobileFallback />
       </main>
       <AboutNav />
     </>

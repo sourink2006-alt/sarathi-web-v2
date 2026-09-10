@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { motion } from "motion/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -30,19 +30,47 @@ function getTimeLeft(target: Date): TimeLeft {
   };
 }
 
-function TimeCard({ value, label }: { value: number; label: string }) {
+function subscribeToMobile(callback: () => void) {
+  const mql = window.matchMedia("(max-width: 767px)");
+  mql.addEventListener("change", callback);
+  return () => mql.removeEventListener("change", callback);
+}
+
+function getMobileSnapshot() {
+  return window.matchMedia("(max-width: 767px)").matches;
+}
+
+function getMobileServerSnapshot() {
+  return false;
+}
+
+function TimeCard({
+  value,
+  label,
+  animate,
+}: {
+  value: number;
+  label: string;
+  animate: boolean;
+}) {
   const text = String(value).padStart(2, "0");
   return (
     <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-cream/10 bg-[#16110c]/92 px-1 py-3 shadow-[0_8px_32px_rgba(0,0,0,0.35)] md:bg-cream/[0.06] md:backdrop-blur-md sm:gap-2 sm:py-4">
-      <motion.span
-        key={text}
-        initial={{ y: 14, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.35, ease: "easeOut" }}
-        className="font-accent text-3xl leading-none tabular-nums text-warm-white sm:text-5xl"
-      >
-        {text}
-      </motion.span>
+      {animate ? (
+        <motion.span
+          key={text}
+          initial={{ y: 14, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
+          className="font-accent text-3xl leading-none tabular-nums text-warm-white sm:text-5xl"
+        >
+          {text}
+        </motion.span>
+      ) : (
+        <span className="font-accent text-3xl leading-none tabular-nums text-warm-white sm:text-5xl">
+          {text}
+        </span>
+      )}
       <span className="font-body text-[9px] uppercase tracking-[0.25em] text-gold sm:text-xs">
         {label}
       </span>
@@ -51,6 +79,12 @@ function TimeCard({ value, label }: { value: number; label: string }) {
 }
 
 export function HeroContent() {
+  const isMobile = useSyncExternalStore(
+    subscribeToMobile,
+    getMobileSnapshot,
+    getMobileServerSnapshot,
+  );
+
   const [timeLeft, setTimeLeft] = useState<TimeLeft>({
     days: 0,
     hours: 0,
@@ -109,20 +143,21 @@ export function HeroContent() {
     }
   }, []);
 
+  // Desktop-only Hero text animation — never initialize on mobile
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(max-width: 767px)").matches) return;
+
     gsap.registerPlugin(ScrollTrigger);
 
     const textBlock = textRef.current;
     if (!textBlock) return;
 
-    const isMobile = window.matchMedia("(max-width: 767px)").matches;
-
     const tween = gsap.fromTo(
       textBlock,
       { y: 0 },
       {
-        y: isMobile ? -45 : -120,
+        y: -120,
         ease: "none",
         force3D: true,
         scrollTrigger: {
@@ -140,23 +175,23 @@ export function HeroContent() {
     };
   }, []);
 
+  // Desktop-only countdown cards spread animation — never initialize on mobile
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (window.matchMedia("(max-width: 767px)").matches) return;
+
     gsap.registerPlugin(ScrollTrigger);
 
     const cards = gridRef.current?.children;
     if (!cards || cards.length !== 4) return;
 
-    const isMobile = window.matchMedia("(max-width: 767px)").matches;
     const desktopOffsets = [-120, -60, 60, 120];
-    const mobileOffsets = [-10, -4, 4, 10];
 
     const tween = gsap.fromTo(
       cards,
-      { x: 0, y: 0 },
+      { x: 0 },
       {
-        x: (index) => (isMobile ? mobileOffsets[index] : desktopOffsets[index]),
-        y: isMobile ? -14 : 0,
+        x: (index) => desktopOffsets[index],
         ease: "none",
         force3D: true,
         scrollTrigger: {
@@ -205,10 +240,10 @@ export function HeroContent() {
           className="mt-2 grid w-full max-w-xl grid-cols-4 gap-2 sm:gap-4"
           aria-label="Time remaining until Durga Puja 2026"
         >
-          <TimeCard value={timeLeft.days} label="Days" />
-          <TimeCard value={timeLeft.hours} label="Hours" />
-          <TimeCard value={timeLeft.minutes} label="Mins" />
-          <TimeCard value={timeLeft.seconds} label="Secs" />
+          <TimeCard value={timeLeft.days} label="Days" animate={!isMobile} />
+          <TimeCard value={timeLeft.hours} label="Hours" animate={!isMobile} />
+          <TimeCard value={timeLeft.minutes} label="Mins" animate={!isMobile} />
+          <TimeCard value={timeLeft.seconds} label="Secs" animate={!isMobile} />
         </div>
       )}
     </div>

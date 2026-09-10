@@ -12,7 +12,7 @@ export default function Home() {
         <div data-section="home">
           <ParallaxComponent />
         </div>
-        <div data-section="about">
+        <div data-section="about" className="hidden md:block">
           <AboutExperience />
         </div>
         <div data-section="events">
