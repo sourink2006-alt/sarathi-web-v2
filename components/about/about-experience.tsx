@@ -6,7 +6,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { initSharedLenis, destroySharedLenis } from "@/lib/lenis";
 import { StorySurface } from "./story-surface";
 import { CHAPTERS } from "./story-data";
-import { AboutMobileExperience } from "./about-mobile";
 
 /*
  * The Sarathi Archive — animation engine.
@@ -250,23 +249,18 @@ function getMobileServerSnapshot() {
   return true;
 }
 
-export function AboutExperience({
-  showMobileFallback = false,
-}: {
-  showMobileFallback?: boolean;
-} = {}) {
+export function AboutExperience() {
   const isMobile = useSyncExternalStore(
     subscribeToMobile,
     getMobileSnapshot,
     getMobileServerSnapshot,
   );
 
-  // On mobile screens (< 768px):
+// On mobile screens (< 768px):
   // The expensive cinematic About component is NEVER mounted or initialized.
-  // On the homepage, About returns null (completely omitted).
-  // If /about is visited directly on mobile, it renders the lightweight fallback without GSAP/3D.
+  // Mobile has no About experience.
   if (isMobile) {
-    return showMobileFallback ? <AboutMobileExperience /> : null;
+    return null;
   }
 
   return <AboutDesktopExperience />;
