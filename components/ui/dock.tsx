@@ -201,9 +201,9 @@ export default function Dock({
         role="toolbar"
         aria-label="Site navigation"
       >
-        {items.map((item, index) => (
+        {items.map((item) => (
           <DockItem
-            key={index}
+            key={item.label}
             onClick={item.onClick}
             className={item.className}
             mouseX={mouseX}

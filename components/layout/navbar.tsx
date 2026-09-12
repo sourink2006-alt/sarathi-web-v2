@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { Home, Users, Calendar, Ticket } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { BottomDock, type DockLink } from "@/components/layout/bottom-dock";
 
 function subscribeToMobile(callback: () => void) {
@@ -21,33 +21,42 @@ function getMobileServerSnapshot() {
 
 export function Navbar() {
   const router = useRouter();
+  const pathname = usePathname();
   const isMobile = useSyncExternalStore(
     subscribeToMobile,
     getMobileSnapshot,
     getMobileServerSnapshot,
   );
 
+  const isHome = pathname === "/";
+  const isAbout = pathname === "/about" || pathname.startsWith("/about/");
+  const isEvents = pathname === "/events" || pathname.startsWith("/events/");
+  const isBooking = pathname === "/booking" || pathname.startsWith("/booking/");
+
   const desktopLinks: DockLink[] = [
     {
       label: "Home",
       icon: <Home size={20} strokeWidth={1.75} />,
       onClick: () => router.push("/"),
-      active: true,
+      active: isHome,
     },
     {
       label: "About",
       icon: <Users size={20} strokeWidth={1.75} />,
       onClick: () => router.push("/about"),
+      active: isAbout,
     },
     {
       label: "Events",
       icon: <Calendar size={20} strokeWidth={1.75} />,
       onClick: () => router.push("/events"),
+      active: isEvents,
     },
     {
       label: "Booking",
       icon: <Ticket size={20} strokeWidth={1.75} />,
       onClick: () => router.push("/booking"),
+      active: isBooking,
     },
   ];
 
@@ -56,17 +65,19 @@ export function Navbar() {
       label: "Home",
       icon: <Home size={20} strokeWidth={1.75} />,
       onClick: () => router.push("/"),
-      active: true,
+      active: isHome,
     },
     {
       label: "Events",
       icon: <Calendar size={20} strokeWidth={1.75} />,
       onClick: () => router.push("/events"),
+      active: isEvents,
     },
     {
       label: "Booking",
       icon: <Ticket size={20} strokeWidth={1.75} />,
       onClick: () => router.push("/booking"),
+      active: isBooking,
     },
   ];
 
