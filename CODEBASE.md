@@ -360,3 +360,26 @@ public/
 - **Verification (2026-08-30):** `tsc` 0, `lint` 0 (3 pre-existing `<img>` warnings), `build` clean. Headless Chrome (CDP): top bar renders on all 3 routes with correct active links and dock present, no horizontal overflow, CTA scrolls to `#puja-schedule`, mobile 390px hides inline links (dock navigates), **0 console/page errors** across navigation.
 - **Status:** **RESOLVED**
 - **NOTE (2026-08-31):** the `SiteBrand` fixed top-nav bar described above is **no longer rendered**. A later change replaced it with the pure-branding `BrandLockup` (`components/layout/brand-lockup.tsx`, rendered once in `app/layout.tsx`) — logo + "SARATHI / CULTURAL ASSOCIATION" wordmark top-left and emblem top-right, with **no bar, no inline HOME/ABOUT/EVENTS links, no active states**. The bottom magnify dock is the sole primary navigation on every route. `site-brand.tsx` and the `.sc-nav*` styles it used are now **dead code** (kept, unreferenced).
+
+---
+
+## 21. Decoupled Route-Ownership Architecture (ONE ROUTE = ONE PAGE EXPERIENCE — 2026-09-12)
+
+- **Problem:** `app/page.tsx` was mounting `ParallaxComponent`, `AboutExperience`, `EventsPage`, and `BookingPage` all together on `/`. The 5,760px `.pin-spacer` created by GSAP ScrollTrigger in `AboutExperience` caused scroll markers in `useScrollSection` to desynchronize, triggering the dock active state to switch to "Booking" around Chapter 2.
+- **Solution:**
+  1. **Strict Route Ownership:**
+     - `/` $\to$ Home hero only (`<ParallaxComponent />` + `<Navbar />`).
+     - `/about` $\to$ Cinematic story only (`<AboutExperience />` + `<AboutNav />`).
+     - `/events` $\to$ Schedule & venue only (`<EventsPage />` + `<EventsNav />`).
+     - `/booking` $\to$ Booking & passes only (`<BookingPage />` + `<BookingNav />`).
+  2. **Removed Obsolete Utilities:**
+     - Deleted `lib/use-scroll-section.ts`.
+     - Removed `scrollToLenis` from `lib/lenis.ts`.
+     - Dock navigation uses direct route navigation via `router.push()`.
+  3. **Verification:**
+     - `npx tsc --noEmit`: 0 errors.
+     - `npx eslint`: 0 errors.
+     - `npm run build`: static generation successful for all routes.
+     - Headless Chrome tests: verified `/`, `/about` (all 7 chapters), `/events`, `/booking`, mobile `/about` proxy redirect to `/`, and complete SPA navigation cycle with 0 console errors.
+- **Status:** **COMPLETE**
+
