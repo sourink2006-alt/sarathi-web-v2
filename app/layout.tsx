@@ -11,6 +11,7 @@ import {
 import "./globals.css";
 import "@/components/ui/editor.css";
 import { BrandLockup } from "@/components/layout/brand-lockup";
+import { RouteJourney } from "@/components/layout/route-journey";
 
 const ebGaramond = EB_Garamond({
   variable: "--font-eb-garamond",
@@ -70,6 +71,7 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col bg-night text-cream">
         <BrandLockup />
+        <RouteJourney />
         {children}
       </body>
     </html>
