@@ -48,6 +48,12 @@
   position: relative;
 }
 
+@media (min-width: 768px) {
+  .parallax {
+    min-height: 200vh;
+  }
+}
+
 .parallax__header {
   position: relative;
   height: 100vh;
