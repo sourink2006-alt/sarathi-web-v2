@@ -2,7 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 import { Home, Users, Calendar, Ticket } from "lucide-react";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { BottomDock, type DockLink } from "@/components/layout/bottom-dock";
 
 function subscribeToMobile(callback: () => void) {
@@ -19,44 +19,59 @@ function getMobileServerSnapshot() {
   return false;
 }
 
+type NavItem = "Home" | "About" | "Events" | "Booking";
+
+/**
+ * Route-based active navigation.
+ *
+ * Each route is its own page experience (no continuous document).
+ * Active state is determined purely by pathname:
+ *   /        → Home
+ *   /about   → About
+ *   /events  → Events
+ *   /booking → Booking
+ */
+function useActiveNavItem(): NavItem {
+  const pathname = usePathname();
+  if (pathname.startsWith("/about")) return "About";
+  if (pathname.startsWith("/events")) return "Events";
+  if (pathname.startsWith("/booking")) return "Booking";
+  return "Home";
+}
+
 export function Navbar() {
   const router = useRouter();
-  const pathname = usePathname();
+  const activeItem = useActiveNavItem();
   const isMobile = useSyncExternalStore(
     subscribeToMobile,
     getMobileSnapshot,
     getMobileServerSnapshot,
   );
 
-  const isHome = pathname === "/";
-  const isAbout = pathname === "/about" || pathname.startsWith("/about/");
-  const isEvents = pathname === "/events" || pathname.startsWith("/events/");
-  const isBooking = pathname === "/booking" || pathname.startsWith("/booking/");
-
   const desktopLinks: DockLink[] = [
     {
       label: "Home",
       icon: <Home size={20} strokeWidth={1.75} />,
       onClick: () => router.push("/"),
-      active: isHome,
+      active: activeItem === "Home",
     },
     {
       label: "About",
       icon: <Users size={20} strokeWidth={1.75} />,
       onClick: () => router.push("/about"),
-      active: isAbout,
+      active: activeItem === "About",
     },
     {
       label: "Events",
       icon: <Calendar size={20} strokeWidth={1.75} />,
       onClick: () => router.push("/events"),
-      active: isEvents,
+      active: activeItem === "Events",
     },
     {
       label: "Booking",
       icon: <Ticket size={20} strokeWidth={1.75} />,
       onClick: () => router.push("/booking"),
-      active: isBooking,
+      active: activeItem === "Booking",
     },
   ];
 
@@ -65,19 +80,19 @@ export function Navbar() {
       label: "Home",
       icon: <Home size={20} strokeWidth={1.75} />,
       onClick: () => router.push("/"),
-      active: isHome,
+      active: activeItem === "Home",
     },
     {
       label: "Events",
       icon: <Calendar size={20} strokeWidth={1.75} />,
       onClick: () => router.push("/events"),
-      active: isEvents,
+      active: activeItem === "Events",
     },
     {
       label: "Booking",
       icon: <Ticket size={20} strokeWidth={1.75} />,
       onClick: () => router.push("/booking"),
-      active: isBooking,
+      active: activeItem === "Booking",
     },
   ];
 
