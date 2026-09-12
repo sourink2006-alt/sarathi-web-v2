@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { EventsPage } from "@/components/events/events-page";
-import { BookingPage } from "@/components/booking/booking-page";
 import { EventsNav } from "@/components/events/events-nav";
 
 export const metadata: Metadata = {
@@ -13,12 +12,7 @@ export default function EventsPageRoute() {
   return (
     <>
       <main className="relative w-full">
-        <div data-section="events">
-          <EventsPage />
-        </div>
-        <div data-section="booking">
-          <BookingPage />
-        </div>
+        <EventsPage />
       </main>
       <EventsNav />
     </>

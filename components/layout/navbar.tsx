@@ -4,15 +4,6 @@ import { useSyncExternalStore } from "react";
 import { Home, Users, Calendar, Ticket } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { BottomDock, type DockLink } from "@/components/layout/bottom-dock";
-import { scrollToLenis } from "@/lib/lenis";
-import { useScrollSection } from "@/lib/use-scroll-section";
-
-const ACTIVE_MAP: Record<string, string> = {
-  home: "Home",
-  about: "About",
-  events: "Events",
-  booking: "Booking",
-};
 
 function subscribeToMobile(callback: () => void) {
   const mql = window.matchMedia("(max-width: 767px)");
@@ -28,12 +19,6 @@ function getMobileServerSnapshot() {
   return false;
 }
 
-/*
- * Home / continuous-journey nav.
- *
- * `/` composes Home hero + Events + Booking on mobile (HOME -> EVENTS -> BOOKING),
- * and Home hero + About + Events + Booking on desktop.
- */
 export function Navbar() {
   const router = useRouter();
   const isMobile = useSyncExternalStore(
@@ -42,39 +27,27 @@ export function Navbar() {
     getMobileServerSnapshot,
   );
 
-  const sections = isMobile
-    ? ["home", "events", "booking"]
-    : ["home", "about", "events", "booking"];
-  const section = useScrollSection(sections);
-
-  const go = (selector: string, href: string) => {
-    if (!scrollToLenis(selector)) router.push(href);
-  };
-
   const desktopLinks: DockLink[] = [
     {
       label: "Home",
       icon: <Home size={20} strokeWidth={1.75} />,
-      onClick: () => go('[data-section="home"]', "/"),
-      active: ACTIVE_MAP[section] === "Home",
+      onClick: () => router.push("/"),
+      active: true,
     },
     {
       label: "About",
       icon: <Users size={20} strokeWidth={1.75} />,
-      onClick: () => go('[data-section="about"]', "/about"),
-      active: ACTIVE_MAP[section] === "About",
+      onClick: () => router.push("/about"),
     },
     {
       label: "Events",
       icon: <Calendar size={20} strokeWidth={1.75} />,
-      onClick: () => go('[data-section="events"]', "/events"),
-      active: ACTIVE_MAP[section] === "Events",
+      onClick: () => router.push("/events"),
     },
     {
       label: "Booking",
       icon: <Ticket size={20} strokeWidth={1.75} />,
-      onClick: () => go('[data-section="booking"]', "/booking"),
-      active: ACTIVE_MAP[section] === "Booking",
+      onClick: () => router.push("/booking"),
     },
   ];
 
@@ -82,20 +55,18 @@ export function Navbar() {
     {
       label: "Home",
       icon: <Home size={20} strokeWidth={1.75} />,
-      onClick: () => go('[data-section="home"]', "/"),
-      active: ACTIVE_MAP[section] === "Home",
+      onClick: () => router.push("/"),
+      active: true,
     },
     {
       label: "Events",
       icon: <Calendar size={20} strokeWidth={1.75} />,
-      onClick: () => go('[data-section="events"]', "/events"),
-      active: ACTIVE_MAP[section] === "Events",
+      onClick: () => router.push("/events"),
     },
     {
       label: "Booking",
       icon: <Ticket size={20} strokeWidth={1.75} />,
-      onClick: () => go('[data-section="booking"]', "/booking"),
-      active: ACTIVE_MAP[section] === "Booking",
+      onClick: () => router.push("/booking"),
     },
   ];
 
