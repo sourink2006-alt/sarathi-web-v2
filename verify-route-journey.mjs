@@ -53,7 +53,9 @@ async function getDockState(page) {
   );
 }
 
-/* Wheel toward a boundary using real CDP wheel events; stop when reached. */
+/* Drive to "visual bottom" (within 480px of the limit) — far enough below
+ * the app's BOUNDARY_TOL=32 firing band that a short page's overshoot can't
+ * cross mid-drive. The deliberate continued gesture below does the crossing. */
 async function wheelUntil(page, direction, amountGuard = 600) {
   const dir = direction.toLowerCase();
   for (let i = 0; i < amountGuard; i++) {
@@ -61,7 +63,7 @@ async function wheelUntil(page, direction, amountGuard = 600) {
       const y = window.scrollY;
       const max = Math.max(
         0, document.documentElement.scrollHeight - window.innerHeight);
-      return d === "down" ? y >= max - 4 : y <= 4;
+      return d === "down" ? y >= max - 480 : y <= 480;
     }, dir);
     if (atBoundary) return true;
     const settled = await page.evaluate(() => {
@@ -87,13 +89,15 @@ async function wheelUntil(page, direction, amountGuard = 600) {
   return false;
 }
 
-/* One extra wheel that pushes PAST the boundary in the given direction. */
+/* One strong continued gesture (3 wheel notches, no release) that pushes
+ * PAST the boundary in the given direction. */
 async function nudgePast(page, direction) {
-  await page.mouse.wheel({
-    deltaX: 0,
-    deltaY: direction === "down" ? 240 : -240,
-  });
-  await sleep(350);
+  const dY = direction === "down" ? 240 : -240;
+  for (let i = 0; i < 3; i++) {
+    await page.mouse.wheel({ deltaX: 0, deltaY: dY });
+    await sleep(24);
+  }
+  await sleep(450);
   return page.evaluate(() => location.pathname);
 }
 
@@ -196,7 +200,7 @@ check("A0 initial dock = Home", (await activeLabel(page)) === "Home");
 /* scroll to home bottom */
 const homeMax = await getMax(page);
 await wheelUntil(page, "down");
-check("A1 reached home bottom", (await getScroll(page)) >= homeMax - 4,
+check("A1 reached home bottom", (await getScroll(page)) >= homeMax - 480,
   `y=${await getScroll(page)} max=${homeMax}`);
 await nudgePast(page, "down");
 check("A2 path -> /about", (await getPath(page)) === "/about");
@@ -226,7 +230,7 @@ check("A7 [REGRESSION] Chapter 2: no pin-spacer corruption",
 
 /* continue through all 7 chapters to the end -> events */
 await wheelUntil(page, "down");
-check("A8 reached about end", (await getScroll(page)) >= aboutMax - 4);
+check("A8 reached about end", (await getScroll(page)) >= aboutMax - 480);
 await nudgePast(page, "down");
 check("A9 path -> /events", (await getPath(page)) === "/events");
 await waitSettle(page);
@@ -302,7 +306,7 @@ check("B8 entered / at BOTTOM", (await getScroll(page)) >= (await getMax(page)) 
 
 /* home up to top stays / */
 await wheelUntil(page, "up");
-check("B9 home top reached", (await getScroll(page)) <= 4);
+check("B9 home top reached", (await getScroll(page)) <= 480);
 await nudgePast(page, "up");
 check("B10 / top + up stays /", (await getPath(page)) === "/");
 

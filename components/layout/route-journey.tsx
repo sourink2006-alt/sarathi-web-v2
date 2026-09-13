@@ -32,7 +32,20 @@ import {
  * redirects phone traffic off /about.
  */
 
-const BOUNDARY_PX = 4;
+/*
+ * Boundary tolerance, not a trigger threshold.
+ *
+ * The boundary is the document limit (max = scrollHeight - innerHeight).
+ * Lenis converges on that limit asynchronously (lerp 0.1), so it is NORMAL
+ * for a wheel gesture's tail to be spent getting from max-32 to max — you
+ * cannot see it, cannot scroll past it, and every bit of it is "the bottom".
+ * A 4px threshold put those silent tail gestures in a dead zone (users had
+ * to scroll several times before the route switched). This tolerance absorbs
+ * the lerp tail, so the FIRST outward gesture that puts the viewport within
+ * ~1 wheel notch of the limit crosses the boundary immediately. It still
+ * cannot fire mid-content: max-32 is the literal bottom of the document.
+ */
+const BOUNDARY_TOL = 32;
 const MODAL_SELECTOR = ".ev-modal, .bk-modal, [data-lenis-prevent]";
 
 /* Lenis tracks velocity/targetScroll internally but does not expose them. */
@@ -84,9 +97,9 @@ export function RouteJourney() {
         0,
         document.documentElement.scrollHeight - window.innerHeight,
       );
-      if (e.deltaY > 0 && y >= max - BOUNDARY_PX) {
+      if (e.deltaY > 0 && y >= max - BOUNDARY_TOL) {
         attemptBoundary(true);
-      } else if (e.deltaY < 0 && y <= BOUNDARY_PX) {
+      } else if (e.deltaY < 0 && y <= BOUNDARY_TOL) {
         attemptBoundary(false);
       }
     };
@@ -98,14 +111,14 @@ export function RouteJourney() {
       const lenis = getSharedLenis();
       if (!lenis) return;
       if ((payload as { deltaY?: unknown } | null)?.deltaY !== undefined) return;
-      const runtime = lenis as LenisRuntime;
+const runtime = lenis as LenisRuntime;
       if (Math.abs(runtime.velocity) < 0.5) return;
       const goingDown = runtime.velocity > 0;
       const y = runtime.scroll;
       const max = runtime.limit;
-      if (goingDown && y >= max - BOUNDARY_PX) {
+      if (goingDown && y >= max - BOUNDARY_TOL) {
         attemptBoundary(true);
-      } else if (!goingDown && y <= BOUNDARY_PX) {
+      } else if (!goingDown && y <= BOUNDARY_TOL) {
         attemptBoundary(false);
       }
     };
@@ -153,7 +166,7 @@ function applyEntryPosition(position: EntryPosition) {
 
     tries++;
     const settled = Math.abs(window.scrollY - target) <= 2;
-    if (tries >= 12 || (settled && tries >= 3)) {
+    if (tries >= 30 || (settled && tries >= 3)) {
       releaseTransitionLock();
       return;
     }
@@ -161,4 +174,23 @@ function applyEntryPosition(position: EntryPosition) {
   };
 
   tick();
+
+  /* A route's limit can still be growing right after it mounts (fonts,
+   * deferred images). The lock must NOT be held waiting for that — holding
+   * it blocks a continued reverse gesture for the whole settle. Instead,
+   * re-anchor once, late, guarded: only move the viewport back to the
+   * bottom if the viewer hasn't already continued past it. */
+  if (position === "end") {
+    window.setTimeout(() => {
+      const lenis = getSharedLenis();
+      if (!lenis?.scrollTo) return;
+      const max = Math.max(
+        0,
+        document.documentElement.scrollHeight - window.innerHeight,
+      );
+      if (window.scrollY >= max - BOUNDARY_TOL * 2) {
+        lenis.scrollTo(max, { immediate: true, force: true });
+      }
+    }, 1200);
+  }
 }
