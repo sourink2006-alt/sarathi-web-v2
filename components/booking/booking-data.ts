@@ -268,12 +268,32 @@ export const STALL_INFO = [
 
 /* ---- Dandiya Night Tickets (fourth booking option) ---- */
 
-export const DANDIYA_NIGHT = {
-  optionTitle: "Dandiya Night Tickets",
-  optionSub: "Tickets for our Dandiya Night on 18 October 2026.",
-  event: "Dandiya Night",
+export type DandiyaConfig = {
+  eventName: string;
+  date: string;
+  tagline: string;
+  ticketPrice: number | null; // set when official price announced
+  currency: string;
+  maxTicketsPerBooking: number;
+  payment: {
+    status: "pending" | "configured";
+    method: string;
+    url: string | null;
+    instructions: string;
+  };
+};
+
+export const DANDIYA_NIGHT: DandiyaConfig = {
+  eventName: "Dandiya Night",
   date: "18 October 2026",
-  status: "COMING SOON",
-  // When the real price, timing, ticket categories, and booking link are
-  // announced, add them here and swap the status pill for the booking action.
-} as const;
+  tagline: "Tickets for SCA's Dandiya Night.",
+  ticketPrice: null,
+  currency: "₹",
+  maxTicketsPerBooking: 6,
+  payment: {
+    status: "pending",
+    method: "UPI",
+    url: null,
+    instructions: "Online payment opens once the official link is live.",
+  },
+};

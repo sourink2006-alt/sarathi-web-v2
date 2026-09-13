@@ -226,7 +226,7 @@ const bookingOpts = await page.evaluate(() => {
     dandiya: !!document.querySelector(".bk-dandiya-feature"),
     name: document.querySelector(".bk-dandiya-feature .bk-dandiya-title")?.textContent.trim() ?? "",
     date: (document.querySelector(".bk-dandiya-feature .bk-dandiya-kicker")?.textContent.trim() ?? "").toUpperCase(),
-    status: document.querySelector(".bk-dandiya-feature .bk-dandiya-cta")?.textContent.trim() ?? "",
+    cta: document.querySelector(".bk-dandiya-feature .bk-dandiya-btn")?.textContent.trim() ?? "",
     hasPrasad: text.includes("Prasad Booking"),
     hasMembership: text.includes("Festival / Event Access Plans"),
     hasStall: text.includes("Stall Application"),
@@ -235,7 +235,8 @@ const bookingOpts = await page.evaluate(() => {
 check("Dandiya Night is the fourth booking option", bookingOpts.dandiya === true);
 check("dandiya block title is 'Dandiya Night'", bookingOpts.name === "Dandiya Night", bookingOpts.name);
 check("dandiya card shows '18 OCTOBER 2026'", bookingOpts.date === "18 OCTOBER 2026", bookingOpts.date);
-check("dandiya card shows COMING SOON status", bookingOpts.status === "COMING SOON", bookingOpts.status);
+check("dandiya block shows BOOK DANDIYA TICKETS CTA", bookingOpts.cta === "Book Dandiya Tickets", bookingOpts.cta);
+check("dandiya block no longer shows COMING SOON", bookingOpts.cta !== "COMING SOON");
 check("existing three booking options untouched",
   bookingOpts.hasPrasad && bookingOpts.hasMembership && bookingOpts.hasStall,
   `prasad=${bookingOpts.hasPrasad} membership=${bookingOpts.hasMembership} stall=${bookingOpts.hasStall}`);
@@ -345,6 +346,128 @@ await quickTrial("Dandiya Night", "bk-dandiya");
     row.fits, `rowW=${row.rowW} contentW=${row.contentW}`);
   check("quick row hides its scrollbar", row.sbWidth === "none");
 }
+
+await driveToTop();
+await sleep(200);
+
+console.log("\n== 1e. Dandiya ticket modal (4-step flow) ==\n");
+// 1. Click the CTA to open the modal
+const ctaBtn = await page.evaluate(() => {
+  const btn = document.querySelector(".bk-dandiya-btn");
+  if (!btn) return false;
+  btn.click();
+  return true;
+});
+await sleep(600);
+const modalOpen = await page.evaluate(() => !!document.querySelector(".bk-modal"));
+check("clicking Book Dandiya Tickets opens the modal", ctaBtn === true && modalOpen);
+// Step 1 — tickets
+const step1Info = await page.evaluate(() => {
+  const label = document.querySelector(".bk-d-hero-label")?.textContent.trim() ?? "";
+  const date = document.querySelector(".bk-d-hero-date")?.textContent.trim() ?? "";
+  const qtyInput = document.querySelector(".bk-qty-input");
+  const totalText = document.querySelector(".bk-d-total-row strong")?.textContent.trim() ?? "";
+  return { label, date, qtyVal: qtyInput ? Number(qtyInput.value) : null, totalText };
+});
+check("step 1 hero shows event name", step1Info.label === "Dandiya Night", step1Info.label);
+check("step 1 hero shows event date", step1Info.date === "18 October 2026", step1Info.date);
+check("step 1 qty starts at 1", step1Info.qtyVal === 1, `val=${step1Info.qtyVal}`);
+check("step 1 total is 'To be announced' (no price configured)", step1Info.totalText === "To be announced", step1Info.totalText);
+// increment qty
+await page.evaluate(() => {
+  const inc = document.querySelectorAll(".bk-stepper button")[1];
+  inc?.click();
+});
+await sleep(200);
+const qtyAfterInc = await page.evaluate(() => {
+  const qtyInput = document.querySelector(".bk-qty-input");
+  return qtyInput ? Number(qtyInput.value) : null;
+});
+check("qty incremented to 2", qtyAfterInc === 2, `val=${qtyAfterInc}`);
+// Click Continue → step 2
+await page.evaluate(() => {
+  const btns = Array.from(document.querySelectorAll(".bk-d-panel .sc-cta"));
+  btns.find((b) => b.textContent.includes("Continue"))?.click();
+});
+await sleep(400);
+const step2Visible = await page.evaluate(() => {
+  return !!document.querySelector(".bk-d-modal .bk-form-title");
+});
+check("step 2 (details form) appears after Continue", step2Visible);
+// Submit empty → validation errors
+await page.evaluate(() => {
+  const btn = document.querySelector(".bk-d-modal .bk-submit[type='submit']");
+  btn?.click();
+});
+await sleep(300);
+const hasErrors = await page.evaluate(() => {
+  return document.querySelectorAll(".bk-field--invalid").length > 0;
+});
+check("step 2 shows validation errors when submitted empty", hasErrors);
+// Fill details
+await page.evaluate(() => {
+  const inputs = document.querySelectorAll(".bk-d-modal .bk-input");
+  inputs[0].focus();
+  // Name
+  const nativeSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
+  nativeSet.call(inputs[0], "Test User");
+  inputs[0].dispatchEvent(new Event("input", { bubbles: true }));
+  inputs[0].dispatchEvent(new Event("change", { bubbles: true }));
+  nativeSet.call(inputs[1], "9876543210");
+  inputs[1].dispatchEvent(new Event("input", { bubbles: true }));
+  inputs[1].dispatchEvent(new Event("change", { bubbles: true }));
+  nativeSet.call(inputs[2], "test@example.com");
+  inputs[2].dispatchEvent(new Event("input", { bubbles: true }));
+  inputs[2].dispatchEvent(new Event("change", { bubbles: true }));
+});
+await sleep(200);
+// Click Review Booking → step 3
+await page.evaluate(() => {
+  const btn = document.querySelector(".bk-d-modal .sc-cta[type='submit']");
+  btn?.click();
+});
+await sleep(400);
+const step3Info = await page.evaluate(() => {
+  const rows = document.querySelectorAll(".bk-d-summary-row");
+  const nameEl = document.querySelectorAll(".bk-d-summary-details div");
+  return {
+    event: rows[0]?.querySelector("strong")?.textContent.trim() ?? "",
+    date: rows[1]?.querySelector("strong")?.textContent.trim() ?? "",
+    tickets: rows[2]?.querySelector("strong")?.textContent.trim() ?? "",
+    name: nameEl[0]?.querySelector("strong")?.textContent.trim() ?? "",
+    mobile: nameEl[1]?.querySelector("strong")?.textContent.trim() ?? "",
+    email: nameEl[2]?.querySelector("strong")?.textContent.trim() ?? "",
+  };
+});
+check("step 3 summary shows event name", step3Info.event === "Dandiya Night", step3Info.event);
+check("step 3 summary shows date", step3Info.date === "18 October 2026", step3Info.date);
+check("step 3 summary shows tickets = 2", step3Info.tickets === "2", step3Info.tickets);
+check("step 3 summary shows entered name", step3Info.name === "Test User", step3Info.name);
+check("step 3 summary shows entered mobile", step3Info.mobile === "9876543210", step3Info.mobile);
+check("step 3 summary shows entered email", step3Info.email === "test@example.com", step3Info.email);
+// Click Confirm Booking → step 4
+await page.evaluate(() => {
+  const btns = Array.from(document.querySelectorAll(".bk-d-panel .sc-cta"));
+  btns.find((b) => b.textContent.includes("Confirm Booking"))?.click();
+});
+await sleep(400);
+const step4Info = await page.evaluate(() => {
+  const pending = document.querySelector(".bk-d-pending p")?.textContent.trim() ?? "";
+  const doneBtn = Array.from(document.querySelectorAll(".bk-d-panel .sc-cta")).find(
+    (b) => b.textContent.includes("Done"),
+  );
+  return { pending, hasDone: !!doneBtn };
+});
+check("step 4 shows payment pending message", step4Info.pending === "Online payment opens once the official link is live.", step4Info.pending);
+check("step 4 has Done button", step4Info.hasDone);
+// Click Done → modal closes
+await page.evaluate(() => {
+  const btns = Array.from(document.querySelectorAll(".bk-d-panel .sc-cta"));
+  btns.find((b) => b.textContent.includes("Done"))?.click();
+});
+await sleep(600);
+const modalClosed = await page.evaluate(() => !document.querySelector(".bk-modal"));
+check("modal closes after Done", modalClosed);
 
 await driveToTop();
 await sleep(200);

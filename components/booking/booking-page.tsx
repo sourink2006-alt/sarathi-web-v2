@@ -220,6 +220,45 @@ export function BookingPage() {
   const [sErr, setSErr] = useState<Err>({});
   const [sDone, setSDone] = useState(false);
 
+  /* ---- dandiya tickets ---- */
+  const [dandiyaOpen, setDandiyaOpen] = useState(false);
+  const [dStep, setDStep] = useState(1);
+  const [dQty, setDQty] = useState(1);
+  const [dName, setDName] = useState("");
+  const [dMobile, setDMobile] = useState("");
+  const [dEmail, setDEmail] = useState("");
+  const [dErr, setDErr] = useState<Err>({});
+
+  const closeDandiya = useCallback(() => {
+    setDandiyaOpen(false);
+    setDStep(1);
+    setDQty(1);
+    setDName("");
+    setDMobile("");
+    setDEmail("");
+    setDErr({});
+  }, []);
+
+  const nextDandiya = () => {
+    if (dStep === 2) {
+      const err: Err = {};
+      if (!dName.trim()) err.name = "Full name is required.";
+      if (!/^[0-9+\-\s]{7,15}$/.test(dMobile.trim()))
+        err.mobile = "Enter a valid mobile number.";
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(dEmail.trim()))
+        err.email = "Enter a valid email address.";
+      setDErr(err);
+      if (Object.keys(err).length) return;
+    }
+    setDErr({});
+    setDStep((s) => Math.min(s + 1, 4));
+  };
+
+  const dPrice = DANDIYA_NIGHT.ticketPrice;
+  const dTotal =
+    dPrice === null ? null : dPrice * dQty;
+  const dMax = DANDIYA_NIGHT.maxTicketsPerBooking;
+
   const selectedPlan =
     (memberKey && MEMBERSHIP_PLANS.find((p) => p.key === memberKey)) || null;
 
@@ -615,7 +654,7 @@ export function BookingPage() {
 
       {/* ================= DANDIYA NIGHT TICKETS ================= */}
       <section id="bk-dandiya" className="sc-section sc-container" data-reveal>
-        <div className="bk-dandiya-feature" aria-disabled="true">
+        <div className="bk-dandiya-feature">
           <div className="bk-dandiya-rings" aria-hidden="true">
             <span />
             <span />
@@ -624,9 +663,15 @@ export function BookingPage() {
           <div className="bk-dandiya-copy">
             <p className="bk-dandiya-kicker">{DANDIYA_NIGHT.date}</p>
             <span className="bk-dandiya-rule" aria-hidden="true" />
-            <div className="bk-dandiya-title">{DANDIYA_NIGHT.event}</div>
-            <p className="bk-dandiya-sub">{DANDIYA_NIGHT.optionSub}</p>
-            <span className="bk-dandiya-cta">{DANDIYA_NIGHT.status}</span>
+            <div className="bk-dandiya-title">{DANDIYA_NIGHT.eventName}</div>
+            <p className="bk-dandiya-sub">{DANDIYA_NIGHT.tagline}</p>
+            <button
+              type="button"
+              className="sc-cta bk-dandiya-btn"
+              onClick={() => setDandiyaOpen(true)}
+            >
+              Book Dandiya Tickets
+            </button>
           </div>
         </div>
       </section>
@@ -1029,6 +1074,172 @@ export function BookingPage() {
             ) : null}
           </form>
         )}
+      </Modal>
+
+      {/* ---------- DANDIYA TICKETS MODAL ---------- */}
+      <Modal
+        open={dandiyaOpen}
+        onClose={closeDandiya}
+        title={`${DANDIYA_NIGHT.eventName} — ${DANDIYA_NIGHT.date}`}
+      >
+        <div className="bk-d-modal">
+          {/* Step indicators */}
+          <div className="bk-steps" aria-label="Dandiya ticket steps">
+            <span className={dStep >= 2 ? "bk-step bk-step--done" : "bk-step bk-step--on"}>
+              <b>1</b> Tickets
+            </span>
+            <span className={dStep >= 3 ? "bk-step bk-step--done" : dStep === 2 ? "bk-step bk-step--on" : "bk-step"}>
+              <b>2</b> Details
+            </span>
+            <span className={dStep >= 4 ? "bk-step bk-step--done" : dStep === 3 ? "bk-step bk-step--on" : "bk-step"}>
+              <b>3</b> Summary
+            </span>
+            <span className={dStep === 4 ? "bk-step bk-step--on" : "bk-step"}>
+              <b>4</b> Payment
+            </span>
+          </div>
+
+          {/* Step 1 — Select tickets */}
+          {dStep === 1 && (
+            <div className="bk-d-panel">
+              <div className="bk-d-hero">
+                <span className="bk-d-hero-label">{DANDIYA_NIGHT.eventName}</span>
+                <span className="bk-d-hero-date">{DANDIYA_NIGHT.date}</span>
+              </div>
+
+              <div className="bk-d-qty">
+                <div className="bk-d-qty-head">Number of Tickets</div>
+                <div className="bk-qty-row">
+                  <div className="bk-stepper">
+                    <button type="button" aria-label="Decrease quantity" onClick={() => setDQty((q) => Math.max(1, q - 1))}>−</button>
+                    <input className="bk-input bk-qty-input" type="number" min={1} max={dMax} aria-label="Quantity" value={dQty} onChange={(e) => setDQty(Math.max(1, Math.min(dMax, Number(e.target.value) || 1)))} />
+                    <button type="button" aria-label="Increase quantity" onClick={() => setDQty((q) => Math.min(dMax, q + 1))}>+</button>
+                  </div>
+                  <span className="bk-d-qty-max">Max {dMax} per booking</span>
+                </div>
+              </div>
+
+              {dPrice !== null ? (
+                <div className="bk-d-price-row">
+                  <span>Price per ticket</span>
+                  <strong>{DANDIYA_NIGHT.currency}{dPrice}</strong>
+                </div>
+              ) : (
+                <div className="bk-d-price-row bk-d-price-row--pending">
+                  <span>Price</span>
+                  <em>To be announced</em>
+                </div>
+              )}
+
+              <div className="bk-d-total-row">
+                <span>Total</span>
+                <strong>
+                  {dTotal !== null
+                    ? `${DANDIYA_NIGHT.currency}${dTotal}`
+                    : "To be announced"}
+                </strong>
+              </div>
+
+              <button type="button" className="sc-cta bk-submit" onClick={() => setDStep(2)}>
+                Continue
+              </button>
+            </div>
+          )}
+
+          {/* Step 2 — Customer details */}
+          {dStep === 2 && (
+            <form className="bk-form" onSubmit={(e) => { e.preventDefault(); nextDandiya(); }} noValidate>
+              <div className="bk-form-title">Your Details</div>
+              <Field label="Full Name" required error={dErr.name}>
+                <input className="bk-input" value={dName} onChange={(e) => setDName(e.target.value)} placeholder="Your full name" />
+              </Field>
+              <Field label="Mobile Number" required error={dErr.mobile}>
+                <input className="bk-input" value={dMobile} onChange={(e) => setDMobile(e.target.value)} placeholder="e.g. 98765 43210" />
+              </Field>
+              <Field label="Email" required error={dErr.email}>
+                <input className="bk-input" type="email" value={dEmail} onChange={(e) => setDEmail(e.target.value)} placeholder="you@example.com" />
+              </Field>
+              <div className="bk-d-btns">
+                <button type="button" className="sc-cta--ghost bk-submit" onClick={() => setDStep(1)}>Back</button>
+                <button type="submit" className="sc-cta bk-submit">Review Booking</button>
+              </div>
+            </form>
+          )}
+
+          {/* Step 3 — Booking summary */}
+          {dStep === 3 && (
+            <div className="bk-d-panel">
+              <div className="bk-form-title">Booking Summary</div>
+              <div className="bk-d-summary">
+                <div className="bk-d-summary-row"><span>Event</span><strong>{DANDIYA_NIGHT.eventName}</strong></div>
+                <div className="bk-d-summary-row"><span>Date</span><strong>{DANDIYA_NIGHT.date}</strong></div>
+                <div className="bk-d-summary-row"><span>Tickets</span><strong>{dQty}</strong></div>
+                <div className="bk-d-summary-row">
+                  <span>Price per ticket</span>
+                  <strong>{dPrice !== null ? `${DANDIYA_NIGHT.currency}${dPrice}` : "To be announced"}</strong>
+                </div>
+                <div className="bk-d-summary-row bk-d-summary-row--total">
+                  <span>Total</span>
+                  <strong>{dTotal !== null ? `${DANDIYA_NIGHT.currency}${dTotal}` : "To be announced"}</strong>
+                </div>
+              </div>
+              <div className="bk-d-summary-details">
+                <div><span>Name</span><strong>{dName}</strong></div>
+                <div><span>Mobile</span><strong>{dMobile}</strong></div>
+                <div><span>Email</span><strong>{dEmail}</strong></div>
+              </div>
+              <div className="bk-d-btns">
+                <button type="button" className="sc-cta--ghost bk-submit" onClick={() => setDStep(2)}>Back</button>
+                <button type="button" className="sc-cta bk-submit" onClick={() => setDStep(4)}>
+                  {DANDIYA_NIGHT.payment.status === "configured" ? "Continue to Payment" : "Confirm Booking"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4 — Payment */}
+          {dStep === 4 && (
+            <div className="bk-d-panel">
+              <div className="bk-form-title">
+                {DANDIYA_NIGHT.payment.status === "configured" ? "Payment" : "Booking Confirmed"}
+              </div>
+
+              {DANDIYA_NIGHT.payment.status === "configured" ? (
+                <div className="bk-d-payment">
+                  <p className="bk-d-payment-instructions">{DANDIYA_NIGHT.payment.instructions}</p>
+                  {DANDIYA_NIGHT.payment.url ? (
+                    <a className="sc-cta bk-submit" href={DANDIYA_NIGHT.payment.url} target="_blank" rel="noopener noreferrer">
+                      Pay Now
+                    </a>
+                  ) : (
+                    <button className="sc-cta bk-submit" type="button" disabled>
+                      Pay via {DANDIYA_NIGHT.payment.method}
+                    </button>
+                  )}
+                  <button type="button" className="sc-cta--ghost bk-submit" onClick={closeDandiya}>
+                    Close
+                  </button>
+                </div>
+              ) : (
+                <div className="bk-d-pending">
+                  <p>{DANDIYA_NIGHT.payment.instructions}</p>
+                  <div className="bk-d-summary">
+                    <div className="bk-d-summary-row"><span>Event</span><strong>{DANDIYA_NIGHT.eventName}</strong></div>
+                    <div className="bk-d-summary-row"><span>Date</span><strong>{DANDIYA_NIGHT.date}</strong></div>
+                    <div className="bk-d-summary-row"><span>Tickets</span><strong>{dQty}</strong></div>
+                    <div className="bk-d-summary-row bk-d-summary-row--total">
+                      <span>Total</span>
+                      <strong>{dTotal !== null ? `${DANDIYA_NIGHT.currency}${dTotal}` : "To be announced"}</strong>
+                    </div>
+                  </div>
+                  <button type="button" className="sc-cta bk-submit" onClick={closeDandiya}>
+                    Done
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </Modal>
     </div>
   );
