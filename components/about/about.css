@@ -6,8 +6,6 @@
 
 .ab {
   position: relative;
-  z-index: 10;
-  background: var(--color-ink);
   min-height: 100vh;
 }   
 

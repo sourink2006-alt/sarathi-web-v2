@@ -20,7 +20,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { initSharedLenis, destroySharedLenis, getSharedLenis } from "@/lib/lenis";
+import { getSharedLenis } from "@/lib/lenis";
 import {
   PRASAD_ITEMS,
   MEMBERSHIP_PLANS,
@@ -302,7 +302,6 @@ export function BookingPage() {
     const root = rootRef.current;
     if (!root) return;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    initSharedLenis();
     let ctx: gsap.Context | undefined;
     if (!reduced) {
       ctx = gsap.context(
@@ -326,7 +325,6 @@ export function BookingPage() {
     }
     return () => {
       ctx?.revert();
-      destroySharedLenis();
     };
   }, []);
 
@@ -579,13 +577,6 @@ export function BookingPage() {
           </form>
         </div>
       </section>
-
-      <footer
-        data-reveal
-        className="bk-footer"
-      >
-        © {new Date().getFullYear()} Sarathi Cultural Association — Durga Puja 2026
-      </footer>
 
       {/* ---------- PRASAD MODAL ---------- */}
       <Modal open={!!prasad} onClose={closePrasad} title="Scan & Pay via UPI">

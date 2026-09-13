@@ -3,20 +3,18 @@
 import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { initSharedLenis, destroySharedLenis } from "@/lib/lenis";
 import { EventsHero } from "./events-hero";
 import { ScheduleSection } from "./schedule-section";
-import { VenueSection } from "./venue-section";
 import "./events.css";
 
 /*
- * Events route orchestrator.
+ * Events section orchestrator (embedded in the continuous root page).
  *
  * Motion is component-scoped and restrained: a mount-time hero entrance and
  * once-per-viewport section reveals. No pinning (nothing reparents DOM), no
  * global ScrollTrigger teardown. Cleanup mirrors the project rule:
- * useLayoutEffect + gsap.context() + ctx.revert(), and only the Lenis
- * ref this page acquired is released.
+ * useLayoutEffect + gsap.context() + ctx.revert(). Lenis is owned by the
+ * ScrollManager in the root layout.
  */
 export function EventsPage() {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -27,7 +25,6 @@ export function EventsPage() {
     if (!root) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    initSharedLenis();
 
     let ctx: gsap.Context | undefined;
     if (!reduced) {
@@ -70,7 +67,6 @@ export function EventsPage() {
 
     return () => {
       ctx?.revert();
-      destroySharedLenis();
     };
   }, []);
 
@@ -78,7 +74,6 @@ export function EventsPage() {
     <div ref={rootRef} className="ev">
       <EventsHero />
       <ScheduleSection />
-      <VenueSection />
     </div>
   );
 }

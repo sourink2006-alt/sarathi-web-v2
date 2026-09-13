@@ -1,31 +1,8 @@
-"use client";
-
-import React, { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { initSharedLenis, destroySharedLenis } from "@/lib/lenis";
 import { HeroContent } from "@/components/home/hero-content";
 
 export function ParallaxComponent() {
-  const parallaxRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (window.matchMedia("(max-width: 767px)").matches) return;
-
-    gsap.registerPlugin(ScrollTrigger);
-    if (typeof window !== "undefined") {
-      (window as unknown as Record<string, unknown>).ScrollTrigger = ScrollTrigger;
-    }
-
-    initSharedLenis();
-
-    return () => {
-      destroySharedLenis();
-    };
-  }, []);
-
   return (
-    <div className="parallax" ref={parallaxRef}>
+    <div className="parallax">
       <section className="parallax__header">
         <div className="parallax__visuals">
           <div className="parallax__layers">
@@ -42,7 +19,6 @@ export function ParallaxComponent() {
                 className="parallax__layer-img"
               />
             </picture>
-            <div className="parallax__overlay"></div>
             <div className="parallax__layer-title">
               <HeroContent />
             </div>

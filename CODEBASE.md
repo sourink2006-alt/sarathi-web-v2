@@ -7,19 +7,17 @@ Living technical memory of the SCA frontend project. Read this file first in eve
 ## 1. Project Overview
 
 - **What it is:** Frontend-only marketing site for **SCA — Sarathi Cultural Association**, a Bengali cultural association in Bengaluru (Durga Puja and community events). Tagline: "From Kolkata to Bengaluru — Every Bengali Carries Two Homes."
-- **What it currently contains:**
-  1. `/` — Single-page cinematic hero experience: fixed brand lockup (top-left), decorative emblem (top-right), full-screen parallax hero image with title + live Durga Puja countdown, icon divider strip, and bottom-center dock navigation.
-  2. `/about` — Cinematic "Origin" storytelling experience: 7-chapter interactive story surface with pinned camera animations, spotlight, SVG route drawing, and HUD progress indicator.
-  3. `/events` — Upcoming events rebuilt (2026-08-31) as: EVENTS hero → EVENT SCHEDULE (BookMyShow-style cards split into CULTURAL EVENTS 15–21 Oct and RELIGIOUS EVENTS 16–21 Oct, each opening an in-page detail modal) → BBMP GROUND / WHERE WE GATHER.
-- **Current development state:** `/events` built and verified on 2026-08-30 (see §19). All three routes render clean static prerenders with 0 console/page errors across SPA navigation.
+- **What it currently contains:** **ONE continuous root document** at `/` — a single browser scrollbar carries the whole experience top to bottom: `#home` (cinematic parallax hero + live Durga Puja countdown) → `#about` (the pinned 7-chapter cinematic story) → `#events` (schedule + venue) → `#booking` (prasad / membership / stall forms) → footer (inside `#booking`). The bottom dock smooth-scrolls between sections — no route reloads, no scroll hijacking.
+- **Legacy routes:** `/about`, `/events`, `/booking` are server 307 redirects to `/#about`, `/#events`, `/#booking` (deep links work on hard reload too).
+- **Current development state:** single-page architecture refactored and verified on 2026-09-13 (§22). `/` statically prerendered; the three legacy routes render as dynamic redirects.
 
 ---
 
 ## 2. Current Status
 
 **Audited:** framework, dependencies, all components, all animations, all assets, external connections.
-**Routes present:** `/` (Home), `/about` (About), and `/events` (Events).
-**Nav entries:** Home (`/`), About (`/about`), and Events (`/events`) — each route renders its own nav (`Navbar`/`AboutNav`/`EventsNav`) with the active item highlighted.
+**Routes present:** `/` is the ONLY real route — one continuous document carrying `#home` → `#about` → `#events` → `#booking`. `/about`, `/events`, `/booking` are server 307 redirects to the `/#section` anchors.
+**Nav entries:** single bottom dock (Home / About / Events / Booking on desktop; Home / Events / Booking on mobile) with scrollspy active highlighting, smooth-scrolls between sections via Lenis — no `router.push`, URL stays `/` (`replaceState` hash only).
 
 ---
 
@@ -44,61 +42,68 @@ Living technical memory of the SCA frontend project. Read this file first in eve
 
 ```text
 app/
-  about/
-    page.tsx           About page route: <SiteBrand/> + <AboutExperience/> + <AboutNav/>
-  events/
-    page.tsx           Events page route: <SiteBrand/> + <EventsPage/> + <EventsNav/>
-  globals.css          Tailwind v4 @theme tokens (colors/fonts) + hero/parallax CSS
-  layout.tsx           Root layout: fonts, metadata, favicon, dark body
-  page.tsx             Home route "/": <Navbar/> + <ParallaxComponent/>
+  about/  events/  booking/
+    page.tsx           LEGACY ROUTES — server 307 redirect → /#about, /#events, /#booking (dynamic)
+  globals.css          Tailwind v4 @theme tokens + html,body overflow-x:clip (single global scrollbar)
+  layout.tsx           Root layout: fonts, metadata, favicon, dark body, <ScrollManager/>
+  page.tsx             THE ONE PAGE "/": <Navbar/> + sections #home #about #events #booking (+footer)
 components/
   about/
-    about-experience.tsx  About animation engine: Lenis + GSAP ScrollTrigger timeline (pin: true)
-    about-nav.tsx         About bottom dock navigation
+    about-experience.tsx  About cinematic engine: GSAP ScrollTrigger timeline (pin: true, end "+=5760").
+                          Drives off window scroll. No Lenis init. Returns null on mobile (<768px).
+    about-nav.tsx         About bottom dock navigation (dead code? reactivated via shared navbar dock)
     about.css             Styles for story surface, cards, paper objects, spotlight
     story-data.ts         Chapter content & SVG route path generator
     story-surface.tsx      Presentational SVG route, cards, paper bits & spotlight elements
+  booking/
+    booking-page.tsx      Booking section: prasad / membership / stall forms + modal scroll-lock.
+                          Uses getSharedLenis() only (no init/destroy).
+    (booking.css, etc.)   Booking design/parts
   events/
     events-data.ts        ALL event content: hero, Cultural Events (15–21 Oct),
                           festival highlight + amenities, Religious Events (16–21 Oct),
                           rituals, venue
-    events.css            Full /events design (dark hero + BookMyShow-style card schedule + detail modal)
-    events-page.tsx       Events orchestrator: scoped GSAP hero/reveal motion + shared Lenis
+    events.css            Events design (dark hero + BookMyShow-style card schedule + detail modal)
+    events-page.tsx       Events SECTION orchestrator: scoped GSAP hero/reveal motion. No Lenis init.
     events-hero.tsx       Hero: typographic opening, Bengali watermark, corner ornaments
     schedule-section.tsx  Event Schedule: 2 categories (Cultural/Religious) + rituals + highlight + amenities + modal state
     event-card.tsx        BookMyShow-style card — 4:5 poster placeholder + date/title/summary
     event-modal.tsx       In-page detail modal (motion/AnimatePresence), opens on card click
-    venue-section.tsx     Venue — Where We Gather (BBMP Ground) at page bottom
-    events-nav.tsx        Events bottom dock navigation (Events active)
+    venue-section.tsx     Venue — Where We Gather (BBMP Ground) at section bottom
   home/
     hero-content.tsx   Hero center content: kicker, title, blurb, live countdown
   layout/
+    scroll-manager.tsx THE SOLE Lenis owner (new, 2026-09-13): init/destroy shared Lenis
+                       + deep-link (#hash) settle after hydration. (See §22)
+    navbar.tsx         THE dock + brand lockup + emblem. Scrollspy + lenis.scrollTo / replaceState.
+                       No router.push. (See §22)
     bottom-dock.tsx    Shared bottom dock wrapper with scroll opacity fading
-    navbar.tsx         Brand lockup (top-left), emblem (top-right), bottom-center dock for Home
-    site-brand.tsx     Fixed brand lockup top-left & emblem top-right
   ui/
     dock.tsx           Magnifying macOS-style dock (motion/react)
     dock.css           Dock panel/item/tooltip styling
-    parallax-scrolling.tsx  THE HERO: Lenis + GSAP setup, parallax bg layers, osmo icon strip
+    parallax-scrolling.tsx  #home HERO — now a SERVER component (no Lenis/GSAP client logic)
 public/
   logo.png             SCA logo — favicon + brand lockup top-left
   name.png             Decorative emblem — fixed top-right
   images/
     hero-bg-1920.jpg   USED — hero background layer
-    hero-bg.jpg        UNREFERENCED (candidate for deletion)
-    hero-durga-169.jpg UNREFERENCED (candidate for deletion)
-    hero-durga-full.jpg UNREFERENCED (candidate for deletion)
+    (hero-bg.jpg, hero-durga-169.jpg, hero-durga-full.jpg — UNREFERENCED, candidate for deletion)
+verify-continuous.mjs  One-page architecture verification harness (35 checks, CDP/puppeteer)
 ```
 
 ---
 
 ## 5. Page / Route Map
 
-| Route | File | Contains |
+**SINCE 2026-09-13 THE SITE IS A SINGLE CONTINUOUS DOCUMENT — see §22 for current architecture.**
+
+| Path / Anchor | File | Contains |
 |---|---|---|
-| `/` | `app/page.tsx` | `<Navbar/>` (brand lockup + emblem + dock) and `<ParallaxComponent/>` (hero + countdown + icon strip). |
-| `/about` | `app/about/page.tsx` | `<SiteBrand/>`, `<AboutExperience/>` (7-chapter pinned story surface), `<AboutNav/>`. |
-| `/events` | `app/events/page.tsx` | `EventsPage` (hero → Event Schedule → Cultural/Religious cards → modal → venue) + `EventsNav`. |
+| `/` | `app/page.tsx` | `<Navbar/>` + ALL 4 sections in one body scroll: `#home` (parallax hero + countdown + icon strip) → `#about` (pinned 7-chapter cinematic) → `#events` (schedule + modal + venue) → `#booking` (forms + footer). |
+| `/#home`, `/#about`, `/#events`, `/#booking` | — | In-document section anchors. Deep link on load → ScrollManager settles there; dock click → Lenis smooth scroll (URL stays `/` via `replaceState`). |
+| `/about` | `app/about/page.tsx` | 307 redirect → `/#about` (`export const dynamic = "force-dynamic"`). |
+| `/events` | `app/events/page.tsx` | 307 redirect → `/#events`. |
+| `/booking` | `app/booking/page.tsx` | 307 redirect → `/#booking`. |
 
 ---
 
@@ -335,6 +340,13 @@ public/
 
 ## 19. Events Route — `/events` (Rebuilt 2026-08-31)
 
+> **NOTE (2026-09-13):** `/events` is no longer a route — see §22. Events is now
+> the `[data-section="events"]` section of the single `/` document, rendered on
+> window scroll (no container). The "Motion" bullet below is stale only in its
+> Lenis lines: `events-page.tsx` no longer calls `initSharedLenis()` /
+> `destroySharedLenis()` (Lenis now belongs to `ScrollManager`), and the design /
+> modal / card details still apply verbatim.
+
 - **Route:** `app/events/page.tsx` renders `EventsPage` + `EventsNav` (Calendar icon active). `EventsPage` is **shared**: it is also embedded as the `[data-section="events"]` block of the continuous `/` journey (`app/page.tsx`), so the rebuilt page appears in both contexts automatically. Branding (logo + "SARATHI / CULTURAL ASSOCIATION" top-left, emblem top-right) is rendered globally by `BrandLockup` in `app/layout.tsx` — there is **no** top navigation bar (`SiteBrand` is dead code).
 - **Page order (single scroll):** EVENTS HERO → EVENT SCHEDULE → BBMP GROUND / WHERE WE GATHER.
 - **Content (`components/events/events-data.ts`):** single source of truth, no invented data.
@@ -365,6 +377,13 @@ public/
 
 ## 21. Decoupled Route-Ownership Architecture (ONE ROUTE = ONE PAGE EXPERIENCE — 2026-09-12)
 
+> **SUPERSEDED on 2026-09-13 by §22.** The site is once again ONE continuous
+> root document at `/` (4 sections + one global scrollbar), but with scrollspy
+> dock navigation and NO `router.push`. ALL findings in §21 below (scroll-marker
+> desync from nested/pinned content, single-Lenis rule, mobile About null) drove
+> the §22 design; the `router.push()` / `use-scroll-section` mechanics do not
+> apply anymore.
+
 - **Problem:** `app/page.tsx` was mounting `ParallaxComponent`, `AboutExperience`, `EventsPage`, and `BookingPage` all together on `/`. The 5,760px `.pin-spacer` created by GSAP ScrollTrigger in `AboutExperience` caused scroll markers in `useScrollSection` to desynchronize, triggering the dock active state to switch to "Booking" around Chapter 2.
 - **Solution:**
   1. **Strict Route Ownership:**
@@ -380,6 +399,46 @@ public/
      - `npx tsc --noEmit`: 0 errors.
      - `npx eslint`: 0 errors.
      - `npm run build`: static generation successful for all routes.
-     - Headless Chrome tests: verified `/`, `/about` (all 7 chapters), `/events`, `/booking`, mobile `/about` proxy redirect to `/`, and complete SPA navigation cycle with 0 console errors.
+- Headless Chrome tests: verified `/`, `/about` (all 7 chapters), `/events`, `/booking`, mobile `/about` proxy redirect to `/`, and complete SPA navigation cycle with 0 console errors.
 - **Status:** **COMPLETE**
+
+---
+
+## 22. Single Continuous Root Document — One Page, One Scrollbar (2026-09-13)
+
+> **CURRENT ARCHITECTURE.** The requirement: the whole website is ONE page that
+> scrolls continuously top to bottom; the dock smooth-scrolls between sections;
+> no route changes on navigation. This supersedes §21's route-per-experience.
+
+- **The One Page (`app/page.tsx`):** renders `<Navbar/>` then a single `<main>` stacking all four sections in body scroll order: `#home` (`<ParallaxComponent/>` — now a **server component**, hero + countdown + icon strip) → `#about` (`<AboutExperience/>` — pinned GSAP cinematic) → `#events` (`<EventsPage/>`) → `#booking` (`<BookingPage/>` + footer). There is only ONE vertical scrollbar: html/body (`app/globals.css` base layer: `html, body { overflow-x: clip }`). No route swaps, no scroll hijacking, no nested page scrollers. Verified: total scroll ≈ 16,178px desktop / ≈ 10,029px mobile; section tops ≈ home 0, about 1,800, events 8,460, booking 13,150 (desktop 1440×900).
+- **Legacy routes = redirects:** `app/about/page.tsx`, `app/events/page.tsx`, `app/booking/page.tsx` now do `redirect("/#about")` etc. + `export const dynamic = "force-dynamic"` → build shows `/` static (○), the three legacy routes dynamic (ƒ). Hard reload of `/#booking` / `/#about` lands at the right section (see deep-link settle below).
+- **THE SOLE Lenis OWNER — `components/layout/scroll-manager.tsx` (new):** replaces every per-component `initSharedLenis()`/`destroySharedLenis()` call (removed from `parallax-scrolling.tsx`, `about-experience.tsx`, `events-page.tsx`, `booking-page.tsx`). Mounted once in `app/layout.tsx`. Rules:
+  - Desktop-only + skips `prefers-reduced-motion: reduce`. Never on mobile (<768px) — mobile keeps native touch scroll.
+  - Still the singleton from `lib/lenis.ts` (`initSharedLenis`/`destroySharedLenis`/`getSharedLenis`), feeds `ScrollTrigger.update()`. `booking-page.tsx` keeps its `getSharedLenis()` usage for modal body scroll-lock only.
+  - **Deep-link settle:** on hydration, if the URL has a `#hash`, ScrollManager smooth-scrolls (instant) to that section via `lenis.scrollTo(el, { immediate: true, force: true, offset: 0 })` on rAF after first paint.
+- **Dock navigation — `components/layout/navbar.tsx:` NO `router.push` anywhere anymore.** Clicks scroll instead: `lenis.scrollTo("#about|#events|#booking", { duration: 1.2, easing: 1-(1-t)^4, force: true })` (Home → `lenis.scrollTo(0, ...)`); native fallback when no Lenis (`window.scrollTo` / `scrollIntoView({ behavior: "smooth", block: "start" })`). URL stays `/`; the hash is written with `window.history.replaceState(null, "", "#id")` — no new history entries (back/forward not polluted, history length unchanged, verified).
+- **Scrollspy (navbar.tsx):** pure offset math instead of the removed `use-scroll-section` library: section tops cached on mount, re-measured on resize, window load, and a 1400ms font-settle timeout; section considered active when `scrollY + innerHeight*0.4` passes its top. `setActive` only fires on actual change. Sections whose `getBoundingClientRect().height < 4` are skipped (About unmounts on mobile). About icon stays lit across the WHOLE pinned run (verified with probes at 600/2500/2500px scroll).
+- **About cinematic UNCHANGED in behavior** (`about-experience.tsx`): already a GSAP `pin: true, end: "+=5760"` ScrollTrigger driving off window scroll, so it needed no container refactor. `.pin-spacer` still measured (haul ≈7,560px). Forward AND reverse chapter progression 01/07 → 07/07 verified. Still null on mobile.
+- **Cleanup:** `components/layout/scroll-to-top.tsx` deleted (no route changes to reset); per-component Lenis blocks deleted. Leftover scroll-containers audit: only legitimate `.bk-modal-panel` (booking modal), `.ev-card-grid` (mobile horizontal snap carousel) keep `overflow`; `ab-stage` / `parallax__header` / `ev-hero` are `overflow: hidden` (non-scrolling stages).
+- **Verification (`verify-continuous.mjs` — 35/35 PASS, real CDP headless Chrome, desktop 1440×900 + mobile 390×844):**
+  1. Four `data-section` blocks (`home/about/events/booking`) present in ONE document; a single tall scroll (max ≈16,162px), no nested vertical scroll container; Lenis active desktop only.
+  2. Wheel-only continuous ride Home → About → Events → Booking and back up with the URL/path staying `/`; About cinematic counters 01/07→07/07 both directions; GSAP `.pin-spacer` present with `.ab` child.
+  3. Dock (About/Events/Booking/Home) smooth-scrolls to each section, sets correct `#hash` via replaceState, highlights the active dock item; history length does NOT grow; About icon active throughout the pinned About run.
+  4. Legacy routes return HTTP 307 → `/`; hard reloads of `/#booking` (~13,150px) and `/#about` (~1,800px) land at the right section; mobile 390px: native touch (no Lenis), 3 dock items (About omitted), section About unmounted (offsetHeight 0), no horizontal overflow (`scrollWidth === 390`), wheel scrolls to bottom, dock Booking scrolls to bottom.
+  5. 0 console errors, 0 page errors on every navigation.
+- **Toolchain:** `npx tsc --noEmit` 0 errors; `npx eslint` 0 errors (pre-existing `<img>` warnings only); `npm run build` clean — `/` static (○); `/about`, `/booking`, `/events` dynamic (ƒ) redirects.
+- **Status:** **COMPLETE** (working tree uncommitted at time of writing; verify harness `verify-continuous.mjs` kept untracked alongside the repo)
+
+## 23. "Where We Gather" — Global Final Website Section (2026-09-13)
+
+> **ARCHITECTURAL CHANGE.** Extends §22. The location section ("Where We Gather" — Sarathi Cultural Association, BBMP Ground, 5th Block, Koramangala, Bengaluru) is no longer part of the Events experience. It is now a **GLOBAL FINAL SECTION** of the root continuous document, and the site footer is now global at the absolute end.
+
+- **Removed from Events:** `EventsPage` (`components/events/events-page.tsx`) no longer renders the venue; `<VenueSection />` and its import were deleted. Events now ends with its event schedule and flows directly into Booking. No spacer was left behind; Events' own height/layout simply reduced. The old file `components/events/venue-section.tsx` was **deleted** (not duplicated).
+- **New home — root/master composition (`app/page.tsx`):** order is `#home → #about → #events → #booking → #gather → <SiteFooter/>`. `#gather` (`data-section="gather"`) renders `VenueSection` (moved to `components/venue/venue-section.tsx`); the `SiteFooter` (new `components/layout/site-footer.tsx`) closes the document. New sections (Gallery, Sponsors, Committee, Donations, Contact, …) must be inserted **before** `#gather` — page.tsx carries an emphatic comment enforcing "always last".
+- **Exactly ONE instance:** single DOM `.ev-venue` block, verified by probe (grab count = 1). Visual design **unchanged** — same markup, classes (`.ev-venue`, `.ev-kicker`, `.ev-venue-address`, `.ev-rule`, `.ev-venue-note`), styling (still resolved from `events.css`, whose venue rules are standalone, non-`.ev`-scoped), typography, colors, spacing, background (body `bg-night`), and reveal animations (the component wires its own GSAP `data-reveal` reveals, mirroring the Events/Booking pattern; reduced-motion still short-circuits to static).
+- **Global footer:** Booking's `<footer class="bk-footer">` tail moved to root `SiteFooter` so the document ends BOOKING → WHERE WE GATHER → FOOTER. Same `.bk-footer` class/style (booking.css) and text preserved; it keeps its own reveal wiring.
+- **Continuous global-scroll UNCHANGED** (§22): one page, one browser scrollbar; `#gather` is body-flow (nothing pinned, no nested scroller, no route, no dock change). The bottom dock still has 4 items (Home/About/Events/Booking) — the location section is informational, not a nav destination; scrollspy untouched.
+- **Data source** `VENUE` still lives in `components/events/events-data.ts` (shared content; import by alias `@/components/events/events-data`).
+- **Verification (`verify-continuous.mjs` — 45/45 PASS, real CDP headless Chrome, desktop 1440×900 + mobile 390×844):** sections = `home,about,events,booking,gather`; gather is last `data-section`, outside Events and outside Booking, exactly once, document order `booking < gather < footer`; Events no longer contains the text "Where We Gather"; wheel-only ride Home→About→Events→Booking→gather→footer and back up, `/` path throughout, About 01/07→07/07 both directions; dock smooth-scroll/highlight/replaceState unchanged; legacy routes still 307→`/#section`; deep links to `#about`/`#booking` land correctly; mobile 390px no horizontal overflow, native touch, 3 dock items, About unmounted, wheel reaches the true bottom through gather+footer; 0 console + 0 page errors. Section tops (2026-09-13 build): about ≈900, events ≈7,560, booking ≈11,728, gather ≈15,470, footer ≈15,990; total scroll ≈16,178px desktop / ≈10,859px mobile.
+- **Toolchain:** `npx tsc --noEmit` 0 errors; `npm run lint` 0 errors (6 pre-existing warnings: `<img>` in brand-lockup/site-brand, unused vars in probe-boundary.mjs/verify-continuous.mjs); `npm run build` clean — `/` static (○); legacy routes dynamic (ƒ) redirects.
 

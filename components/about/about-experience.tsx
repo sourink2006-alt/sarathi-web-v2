@@ -3,7 +3,6 @@
 import { useLayoutEffect, useRef, useSyncExternalStore } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { initSharedLenis, destroySharedLenis } from "@/lib/lenis";
 import { StorySurface } from "./story-surface";
 import { CHAPTERS } from "./story-data";
 
@@ -67,8 +66,7 @@ function AboutDesktopExperience() {
       return;
     }
 
-    /* ---- shared scroll architecture ---- */
-    initSharedLenis();
+    /* ---- shared scroll architecture (Lenis owned by ScrollManager) ---- */
 
     const mobile = window.matchMedia("(max-width: 767px)").matches;
     /* Push the pan past the chapter's board-centre on mobile so edge-placed
@@ -224,7 +222,6 @@ function AboutDesktopExperience() {
        * React's removeChild then targets the wrong parent.
        */
       ctx.revert();
-      destroySharedLenis();
     };
   }, []);
 

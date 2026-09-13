@@ -2,7 +2,12 @@
  * Events route content — single source of truth for the rebuilt Events page.
  *
  * Page order: HERO (Events · Durga Puja 2026) → EVENT SCHEDULE (Cultural +
- * Religious) → VENUE (Where We Gather).
+ * Religious).
+ *
+ * VENUE ("Where We Gather") was once the closing block of this page; as of
+ * 2026-09-13 it is a GLOBAL FINAL SECTION composed at the root page
+ * (components/venue/venue-section.tsx) after Booking and before the footer.
+ * The VENUE constant still lives here as the shared content source.
  *
  * No content is invented. Every value below comes from the supplied 2026
  * programme: the SCA festival poster (performers, dance festival, amenities),
