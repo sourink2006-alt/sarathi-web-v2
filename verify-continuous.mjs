@@ -218,6 +218,137 @@ check("GET DIRECTIONS button links to the maps link in a new tab",
   location.directionsText === "Get Directions",
   `${location.directionsText} → ${location.directionsHref}`);
 
+console.log("\n== 1c. Booking offers four booking options (Dandiya added) ==\n");
+const bookingOpts = await page.evaluate(() => {
+  const bookingEl = document.getElementById("booking");
+  const text = bookingEl ? bookingEl.textContent : "";
+  return {
+    dandiya: !!document.querySelector(".bk-dandiya-feature"),
+    name: document.querySelector(".bk-dandiya-feature .bk-dandiya-title")?.textContent.trim() ?? "",
+    date: (document.querySelector(".bk-dandiya-feature .bk-dandiya-kicker")?.textContent.trim() ?? "").toUpperCase(),
+    status: document.querySelector(".bk-dandiya-feature .bk-dandiya-cta")?.textContent.trim() ?? "",
+    hasPrasad: text.includes("Prasad Booking"),
+    hasMembership: text.includes("Festival / Event Access Plans"),
+    hasStall: text.includes("Stall Application"),
+  };
+});
+check("Dandiya Night is the fourth booking option", bookingOpts.dandiya === true);
+check("dandiya block title is 'Dandiya Night'", bookingOpts.name === "Dandiya Night", bookingOpts.name);
+check("dandiya card shows '18 OCTOBER 2026'", bookingOpts.date === "18 OCTOBER 2026", bookingOpts.date);
+check("dandiya card shows COMING SOON status", bookingOpts.status === "COMING SOON", bookingOpts.status);
+check("existing three booking options untouched",
+  bookingOpts.hasPrasad && bookingOpts.hasMembership && bookingOpts.hasStall,
+  `prasad=${bookingOpts.hasPrasad} membership=${bookingOpts.hasMembership} stall=${bookingOpts.hasStall}`);
+
+console.log("\n== 1d. Booking quick access bar ==\n");
+const quickItems = await page.evaluate(() =>
+  Array.from(document.querySelectorAll(".bk-quick-item")).map((e) => e.textContent.trim()),
+);
+check("quick access bar shows all 4 options in order",
+  JSON.stringify(quickItems) ===
+    JSON.stringify(["Prasad Booking", "Stall Application", "Membership", "Dandiya Night"]),
+  quickItems.join(" | "));
+check("quick access bar is inside the Booking section",
+  await page.evaluate(() => !!document.querySelector("#booking .bk-quick")));
+
+async function quickTrial(label, anchorId, tol = 120) {
+  const clicked = await page.evaluate((lbl) => {
+    const el = Array.from(document.querySelectorAll(".bk-quick-item")).find((e) =>
+      e.textContent.trim() === lbl,
+    );
+    if (!el) return false;
+    el.click();
+    return true;
+  }, label);
+  if (!clicked) throw new Error(`quick item "${label}" not found`);
+  const hashBefore = (await state()).hash;
+  const targetTop = await sectionTop(anchorId);
+  let s, ok = false;
+  for (let i = 0; i < 60; i++) {
+    await sleep(90);
+    s = await state();
+    if (s.y >= targetTop - tol && s.y <= targetTop + tol) { ok = true; break; }
+  }
+  await sleep(500); /* let Lenis finish; avoid measuring mid-flight */
+  check(`quick '${label}' scrolls to #${anchorId} (no route change, fixed header clear)`,
+    ok && s.path === "/", `y=${s.y}/${targetTop}`);
+  const notHidden = await page.evaluate((id) => {
+    const el = document.getElementById(id);
+    return el ? el.getBoundingClientRect().top >= 0 : false;
+  }, anchorId);
+  check(`target #${anchorId} is visible below the top edge`, notHidden);
+  check("quick access click leaves the URL hash untouched", s.hash === hashBefore,
+    `${s.path}${s.hash} vs ${hashBefore}`);
+}
+
+await clickDock("Booking");
+await sleep(1800);
+
+// all four buttons share the same neutral default visual state (no active/feature)
+const btnVisual = await page.evaluate(() => {
+  const btns = Array.from(document.querySelectorAll(".bk-quick-item"));
+  const style = (b) => {
+    const cs = getComputedStyle(b);
+    return [
+      b.className,
+      cs.borderColor,
+      cs.backgroundColor,
+      cs.color,
+      cs.boxShadow,
+    ].join("|");
+  };
+  const first = style(btns[0]);
+  return {
+    identical: btns.every((b) => style(b) === first),
+    anySpecial: btns.some((b) => b.className.includes("--active") || b.className.includes("--featured")),
+    firstClass: btns[0].className,
+  };
+});
+check("quick access buttons have no active/featured class",
+  btnVisual.anySpecial === false, btnVisual.firstClass);
+check("all 4 quick access buttons share the identical default style",
+  btnVisual.identical === true);
+await quickTrial("Prasad Booking", "bk-prasad");
+await quickTrial("Stall Application", "bk-stall");
+await quickTrial("Membership", "bk-membership");
+await quickTrial("Dandiya Night", "bk-dandiya");
+
+// the quick row scrolls horizontally only, never inside a nested vertical scroller
+{
+  const row = await page.evaluate(() => {
+    const el = document.querySelector(".bk-quick-scroll");
+    const wrap = document.querySelector(".bk-quick");
+    const cs = getComputedStyle(el);
+    const items = Array.from(el.children);
+    const fits = items.every((i) => i.getBoundingClientRect().right <= el.getBoundingClientRect().right + 1);
+    const elRect = el.getBoundingClientRect();
+    const wrapRect = wrap.getBoundingClientRect();
+    return {
+      ox: cs.overflowX,
+      oy: cs.overflowY,
+      sbWidth: cs.scrollbarWidth,
+      fits,
+      rowW: Math.round(elRect.width),
+      wrapW: Math.round(wrapRect.width),
+      contentW: el.scrollWidth,
+      centered: Math.abs((elRect.left + elRect.width / 2) - (wrapRect.left + wrapRect.width / 2)) <= 2,
+      compact: elRect.width < wrapRect.width - 1,
+    };
+  });
+  check("quick row is overflow-x only (no nested vertical scrollbar)",
+    row.ox === "auto" && row.oy === "hidden", `x=${row.ox} y=${row.oy}`);
+  check("quick row shrink-wraps its items (no full-width empty panel)",
+    row.compact, `rowW=${row.rowW} wrapW=${row.wrapW}`);
+  check("quick row is centered horizontally within the Booking content",
+    row.centered, `centerOffset=${row.centered}`);
+  check("desktop shows all 4 quick items in one row (no inner horizontal scroll)",
+    row.fits, `rowW=${row.rowW} contentW=${row.contentW}`);
+  check("quick row hides its scrollbar", row.sbWidth === "none");
+}
+
+await driveToTop();
+await sleep(200);
+
 console.log("\n== 2. continuous wheel: Home → About → Events → Booking → Location, no route change ==\n");
 const countersSeen = new Set();
 const during = [];
@@ -311,7 +442,12 @@ for (const [route, hash] of [["/about", "#about"], ["/events", "#events"], ["/bo
   await sleep(900);
   const s = await state();
   check("hard reload of /#booking lands near booking section", s.y > bookingTop - 400, `y=${s.y}/${bookingTop}`);
-  await page.goto(BASE + "/#about", { waitUntil: "networkidle0" });
+const reloadActive = await page.evaluate(() =>
+  Array.from(document.querySelectorAll(".bk-quick-item")).map((e) => e.className),
+);
+check("refresh at #booking leaves all 4 quick buttons in the same neutral state",
+  reloadActive.every((c) => c === "bk-quick-item"), reloadActive.join(","));
+await page.goto(BASE + "/#about", { waitUntil: "networkidle0" });
   await sleep(900);
   const s2 = await state();
   check("hard reload of /#about lands at the cinematic start", s2.y >= aboutTop - 300 && s2.y < aboutTop + 200,
@@ -354,6 +490,35 @@ check("About cinematic not mounted on mobile", mob.aboutSection < 4, `h=${mob.ab
   await sleep(1500);
   const afterDock = await state();
   check("mobile dock Booking scrolls into the booking section", afterDock.y > 2000, `y=${afterDock.y}`);
+  const mQuick = await page.evaluate(() => {
+    const el = document.querySelector(".bk-quick-scroll");
+    const cs = getComputedStyle(el);
+    return {
+      ox: cs.overflowX,
+      oy: cs.overflowY,
+      scrollable: el.scrollWidth > el.clientWidth,
+      sbWidth: cs.scrollbarWidth,
+    };
+  });
+  check("quick row is horizontally scrollable on mobile (only the row)",
+    mQuick.ox === "auto" && mQuick.scrollable,
+    `x=${mQuick.ox} scrollW=${mQuick.scrollable || "fits"}`);
+  check("quick row hides its scrollbar on mobile", mQuick.sbWidth === "none");
+  check("quick row introduces no vertical scrolling on mobile", mQuick.oy === "hidden", `y=${mQuick.oy}`);
+  const mQuickTarget = await page.evaluate(() => {
+    const el = Array.from(document.querySelectorAll(".bk-quick-item")).find((e) =>
+      e.textContent.trim() === "Dandiya Night",
+    );
+    if (!el) return false;
+    el.click();
+    return true;
+  });
+  await sleep(1500);
+  const mQuickScroll = await state();
+  const mDandiyaTop = await sectionTop("bk-dandiya");
+  check("mobile quick 'Dandiya Night' scrolls to the dandiya feature",
+    mQuickTarget && mQuickScroll.y >= mDandiyaTop - 200 && mQuickScroll.y <= mDandiyaTop + 200,
+    `y=${mQuickScroll.y}/${mDandiyaTop}`);
   const mLocTop = await sectionTop("location");
   await clickDock("Location");
   await sleep(1500);

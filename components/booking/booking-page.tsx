@@ -29,6 +29,7 @@ import {
   MEMBERSHIP_TYPES,
   STALL_TYPES,
   STALL_INFO,
+  DANDIYA_NIGHT,
   type PrasadItem,
 } from "./booking-data";
 import "./booking.css";
@@ -158,6 +159,24 @@ function Modal({
       )}
     </AnimatePresence>
   );
+}
+
+const BOOKING_ANCHORS = [
+  { id: "bk-prasad", label: "Prasad Booking" },
+  { id: "bk-stall", label: "Stall Application" },
+  { id: "bk-membership", label: "Membership" },
+  { id: "bk-dandiya", label: "Dandiya Night" },
+] as const;
+
+const BOOKING_EASING = (t: number) => 1 - Math.pow(1 - t, 4);
+
+function scrollToBooking(id: string) {
+  const lenis = getSharedLenis();
+  if (lenis) {
+    lenis.scrollTo(`#${id}`, { duration: 0.9, easing: BOOKING_EASING, force: true });
+  } else {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 }
 
 export function BookingPage() {
@@ -341,8 +360,24 @@ export function BookingPage() {
         </p>
       </header>
 
+      {/* ================= QUICK ACCESS ================= */}
+      <nav className="bk-quick" aria-label="Booking sections">
+        <div className="bk-quick-scroll">
+          {BOOKING_ANCHORS.map((a) => (
+            <button
+              key={a.id}
+              type="button"
+              className="bk-quick-item"
+              onClick={() => scrollToBooking(a.id)}
+            >
+              {a.label}
+            </button>
+          ))}
+        </div>
+      </nav>
+
       {/* ================= PRASAD ================= */}
-      <section className="sc-section sc-container" data-reveal>
+      <section id="bk-prasad" className="sc-section sc-container" data-reveal>
         <div className="bk-cat-head">
           <span className="bk-cat-icon">
             <HandPlatter size={18} />
@@ -399,7 +434,7 @@ export function BookingPage() {
       </section>
 
       {/* ================= MEMBERSHIP ================= */}
-      <section className="sc-section sc-container" data-reveal>
+      <section id="bk-membership" className="sc-section sc-container" data-reveal>
         <div className="bk-cat-head">
           <span className="bk-cat-icon">
             <Wallet size={18} />
@@ -461,7 +496,7 @@ export function BookingPage() {
       </section>
 
       {/* ================= STALL ================= */}
-      <section className="sc-section sc-container" data-reveal>
+      <section id="bk-stall" className="sc-section sc-container" data-reveal>
         <div className="bk-cat-head">
           <span className="bk-cat-icon">
             <Store size={18} />
@@ -575,6 +610,24 @@ export function BookingPage() {
               </div>
             ) : null}
           </form>
+        </div>
+      </section>
+
+      {/* ================= DANDIYA NIGHT TICKETS ================= */}
+      <section id="bk-dandiya" className="sc-section sc-container" data-reveal>
+        <div className="bk-dandiya-feature" aria-disabled="true">
+          <div className="bk-dandiya-rings" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+          <div className="bk-dandiya-copy">
+            <p className="bk-dandiya-kicker">{DANDIYA_NIGHT.date}</p>
+            <span className="bk-dandiya-rule" aria-hidden="true" />
+            <div className="bk-dandiya-title">{DANDIYA_NIGHT.event}</div>
+            <p className="bk-dandiya-sub">{DANDIYA_NIGHT.optionSub}</p>
+            <span className="bk-dandiya-cta">{DANDIYA_NIGHT.status}</span>
+          </div>
         </div>
       </section>
 

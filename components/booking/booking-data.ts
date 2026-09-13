@@ -1,6 +1,7 @@
 /*
  * Booking route content — single source of truth for the Booking page.
- * Three sections: Prasad Booking, Membership Plans, Stall Application.
+ * Four sections: Prasad Booking, Membership Plans, Stall Application,
+ * Dandiya Night Tickets.
  * No content is invented. Every value comes from the supplied specification.
  */
 
@@ -264,3 +265,15 @@ export const STALL_INFO = [
     text: "Free to apply — pricing discussed after approval",
   },
 ] as const;
+
+/* ---- Dandiya Night Tickets (fourth booking option) ---- */
+
+export const DANDIYA_NIGHT = {
+  optionTitle: "Dandiya Night Tickets",
+  optionSub: "Tickets for our Dandiya Night on 18 October 2026.",
+  event: "Dandiya Night",
+  date: "18 October 2026",
+  status: "COMING SOON",
+  // When the real price, timing, ticket categories, and booking link are
+  // announced, add them here and swap the status pill for the booking action.
+} as const;

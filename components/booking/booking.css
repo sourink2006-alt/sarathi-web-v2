@@ -72,6 +72,81 @@
   color: var(--color-sand);
 }
 
+/* ---------- quick access bar ---------- */
+
+.bk-quick {
+  display: flex;
+  justify-content: center;
+  width: min(1140px, 92vw);
+  margin-inline: auto;
+}
+
+.bk-quick-scroll {
+  display: flex;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  border: 1px solid rgba(201, 165, 74, 0.28);
+  border-radius: 14px;
+  background: rgba(18, 15, 23, 0.82);
+  box-shadow: 0 18px 40px -12px rgba(0, 0, 0, 0.65);
+}
+
+@media (min-width: 768px) {
+  .bk-quick-scroll {
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+}
+
+.bk-quick-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.bk-quick-item {
+  flex: none;
+  padding: 12px 18px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--color-cream);
+  font-family: var(--font-jakarta);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.bk-quick-item:hover,
+.bk-quick-item:focus-visible {
+  color: var(--color-gold);
+  border-color: rgba(201, 165, 74, 0.55);
+  background-color: rgba(28, 24, 34, 0.95);
+  outline: none;
+}
+
+.bk-quick-item:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
+/* land each option with a little breathing room below the top edge */
+#bk-prasad,
+#bk-stall,
+#bk-membership,
+#bk-dandiya {
+  scroll-margin-top: 16px;
+}
+
 /* how-it-works box */
 .bk-how {
   margin-top: clamp(22px, 3vw, 32px);
@@ -546,6 +621,150 @@
   font-size: 16px;
   line-height: 1.5;
   color: var(--color-warm-white);
+}
+
+/* ---------- dandiya night tickets ---------- */
+
+.bk-dandiya-feature {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(56px, 8vw, 104px) clamp(24px, 6vw, 80px);
+  border: 1px solid rgba(252, 240, 214, 0.12);
+  border-radius: 24px;
+  background: radial-gradient(
+      120vmax 90vmax at 88% 12%,
+      #1c140d 0%,
+      var(--color-night) 62%
+    ),
+    var(--color-night);
+}
+
+.bk-dandiya-copy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 500px;
+}
+
+.bk-dandiya-kicker {
+  font-family: var(--font-jakarta);
+  font-size: clamp(10px, 1.1vw, 13px);
+  line-height: 1.2;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.bk-dandiya-rule {
+  width: 64px;
+  height: 1px;
+  margin-top: 22px;
+  background: linear-gradient(90deg, var(--color-gold), transparent);
+}
+
+.bk-dandiya-title {
+  margin-top: clamp(18px, 2.6vw, 28px);
+  font-family: var(--font-accent);
+  font-size: clamp(56px, 12vw, 168px);
+  line-height: 0.9;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--color-warm-white);
+  text-wrap: balance;
+}
+
+.bk-dandiya-sub {
+  margin-top: 20px;
+  max-width: 400px;
+  font-family: var(--font-body);
+  font-size: clamp(15px, 1.2vw, 17px);
+  line-height: 1.7;
+  color: var(--color-sand);
+}
+
+.bk-dandiya-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: clamp(28px, 4vw, 44px);
+  padding: 15px 28px;
+  border: 1px solid rgba(199, 165, 74, 0.4);
+  border-radius: 999px;
+  background: rgba(199, 165, 74, 0.06);
+  color: var(--color-gold);
+  font-family: var(--font-jakarta);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  user-select: none;
+  cursor: default;
+}
+
+.bk-dandiya-cta::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--color-gold);
+  box-shadow: 0 0 12px rgba(199, 165, 74, 0.8);
+  animation: bk-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes bk-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* decorative garba rings */
+
+.bk-dandiya-rings {
+  position: absolute;
+  z-index: 0;
+  top: 6%;
+  right: -14%;
+  width: clamp(220px, 40vw, 300px);
+  aspect-ratio: 1;
+  opacity: 0.7;
+  pointer-events: none;
+  user-select: none;
+}
+
+.bk-dandiya-rings span {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(199, 165, 74, 0.2);
+  border-radius: 50%;
+}
+
+.bk-dandiya-rings span:nth-child(2) {
+  inset: 16%;
+  border-style: dashed;
+  border-color: rgba(199, 165, 74, 0.3);
+  animation: bk-spin 60s linear infinite;
+}
+
+.bk-dandiya-rings span:nth-child(3) {
+  inset: 34%;
+  border-color: rgba(252, 240, 214, 0.12);
+  background: radial-gradient(circle, rgba(74, 10, 20, 0.6) 0%, transparent 70%);
+}
+
+@keyframes bk-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (min-width: 768px) {
+  .bk-dandiya-rings {
+    top: -24%;
+    right: -5%;
+    width: clamp(260px, 34vw, 480px);
+    opacity: 1;
+  }
 }
 
 /* ---------- form success message ---------- */
@@ -1140,8 +1359,14 @@
 
 @media (prefers-reduced-motion: reduce) {
   .bk-prasad,
-  .bk-plan {
+  .bk-plan,
+  .bk-dandiya-feature {
     transition: none;
     transform: none !important;
+  }
+
+  .bk-dandiya-cta::before,
+  .bk-dandiya-rings span {
+    animation: none;
   }
 }
