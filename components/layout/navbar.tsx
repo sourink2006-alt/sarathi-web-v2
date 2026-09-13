@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { Home, Users, Calendar, Ticket } from "lucide-react";
+import { Home, Users, Calendar, Ticket, MapPin } from "lucide-react";
 import { BottomDock, type DockLink } from "@/components/layout/bottom-dock";
 import { getSharedLenis } from "@/lib/lenis";
 
-type NavItem = "Home" | "About" | "Events" | "Booking";
+type NavItem = "Home" | "About" | "Events" | "Booking" | "Location";
 
 const SECTIONS: { id: string; item: NavItem }[] = [
   { id: "home", item: "Home" },
   { id: "about", item: "About" },
   { id: "events", item: "Events" },
   { id: "booking", item: "Booking" },
+  { id: "location", item: "Location" },
 ];
 
 const SCROLL_EASING = (t: number) => 1 - Math.pow(1 - t, 4);
@@ -140,12 +141,14 @@ export function Navbar() {
     { label: "About", icon: <Users size={20} strokeWidth={1.75} />, onClick: () => scrollToSection("about"), active: activeItem === "About" },
     { label: "Events", icon: <Calendar size={20} strokeWidth={1.75} />, onClick: () => scrollToSection("events"), active: activeItem === "Events" },
     { label: "Booking", icon: <Ticket size={20} strokeWidth={1.75} />, onClick: () => scrollToSection("booking"), active: activeItem === "Booking" },
+    { label: "Location", icon: <MapPin size={20} strokeWidth={1.75} />, onClick: () => scrollToSection("location"), active: activeItem === "Location" },
   ];
 
   const mobileLinks: DockLink[] = [
     { label: "Home", icon: <Home size={20} strokeWidth={1.75} />, onClick: () => scrollToSection("home"), active: activeItem === "Home" },
     { label: "Events", icon: <Calendar size={20} strokeWidth={1.75} />, onClick: () => scrollToSection("events"), active: activeItem === "Events" },
     { label: "Booking", icon: <Ticket size={20} strokeWidth={1.75} />, onClick: () => scrollToSection("booking"), active: activeItem === "Booking" },
+    { label: "Location", icon: <MapPin size={20} strokeWidth={1.75} />, onClick: () => scrollToSection("location"), active: activeItem === "Location" },
   ];
 
   return <BottomDock items={isMobile ? mobileLinks : desktopLinks} />;

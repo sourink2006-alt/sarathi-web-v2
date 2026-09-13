@@ -111,8 +111,8 @@ await sleep(800);
 const sections = await page.evaluate(() =>
   Array.from(document.querySelectorAll("[data-section]")).map((el) => el.id),
 );
-check("sections present (#home #about #events #booking #gather)",
-  JSON.stringify(sections) === JSON.stringify(["home", "about", "events", "booking", "gather"]),
+check("sections present (#home #about #events #booking #location)",
+  JSON.stringify(sections) === JSON.stringify(["home", "about", "events", "booking", "location"]),
   sections.join(","));
 const doc = await state();
 check("document has ONE tall scroll (scrollHeight > viewport)", doc.max > 900, `max=${doc.max}`);
@@ -142,45 +142,83 @@ const lenisOn = await page.evaluate(() =>
   document.documentElement.classList.contains("lenis"));
 check("Lenis smooth scroll active on desktop", lenisOn === true);
 
-console.log("\n== 1b. 'Where We Gather' is the GLOBAL FINAL section (outside Events) ==\n");
-const gather = await page.evaluate(() => {
+console.log("\n== 1b. 'Location' is the GLOBAL FINAL section (outside Events) ==\n");
+const location = await page.evaluate(() => {
   const text = (sel) => document.querySelector(sel)?.textContent.trim() ?? "";
-  const gatherEl = document.querySelector('[data-section="gather"]');
+  const locEl = document.querySelector('[data-section="location"]');
   const eventsEl = document.getElementById("events");
   const bookingEl = document.getElementById("booking");
   const footerEl = document.querySelector(".bk-footer");
   const top = (el) => (el ? Math.round(el.getBoundingClientRect().top + window.scrollY) : -1);
   const secs = Array.from(document.querySelectorAll("[data-section]"));
+  const iframe = document.querySelector('[data-section="location"] iframe');
+  const directions = document.querySelector('[data-section="location"] a.location-directions');
+  const iframeFrame = iframe ? iframe.parentElement : null;
+  const iframeCSS = iframe ? getComputedStyle(iframe) : null;
+  const frameCSS = iframeFrame ? getComputedStyle(iframeFrame) : null;
+  const size = (cs) => ({
+    w: cs ? Math.round(cs.width.replace("px", "")) : -1,
+    h: cs ? Math.round(cs.height.replace("px", "")) : -1,
+  });
+  const iSize = size(iframeCSS);
+  const fSize = size(frameCSS);
   return {
-    gatherCount: document.querySelectorAll('[data-section="gather"]').length,
-    gatherHeading: text("[data-section=gather] .ev-kicker").replace(/\s+/g, " "),
-    gatherAddress: text("[data-section=gather] .ev-venue-address").replace(/\s+/g, " "),
-    eventsContainsGather: (eventsEl?.textContent ?? "").includes("Where We Gather"),
-    gatherInsideEvents: !!(gatherEl && eventsEl && eventsEl.contains(gatherEl)),
-    gatherInsideBooking: !!(gatherEl && bookingEl && bookingEl.contains(gatherEl)),
-    gatherIsLastSection: secs.length > 0 && secs[secs.length - 1] === gatherEl,
-    tops: { booking: top(bookingEl), gather: top(gatherEl), footer: top(footerEl) },
-    venueRendererCount: document.querySelectorAll(".ev-venue").length,
+    locCount: document.querySelectorAll('[data-section="location"]').length,
+    label: text("[data-section=location] .ev-kicker").replace(/\s+/g, " "),
+    heading: text("[data-section=location] .location-title").replace(/\s+/g, " "),
+    place: text("[data-section=location] .location-place").replace(/\s+/g, " "),
+    address: text("[data-section=location] .location-address").replace(/\s+/g, " "),
+    wholePage: document.body.textContent,
+    locInsideEvents: !!(locEl && eventsEl && eventsEl.contains(locEl)),
+    locInsideBooking: !!(locEl && bookingEl && bookingEl.contains(locEl)),
+    locIsLastSection: secs.length > 0 && secs[secs.length - 1] === locEl,
+    tops: { booking: top(bookingEl), location: top(locEl), footer: top(footerEl) },
+    mapCount: document.querySelectorAll('[data-section="location"] iframe').length,
+    mapSrc: iframe ? iframe.getAttribute("src") : "",
+    mapW: iSize.w,
+    mapH: iSize.h,
+    frameW: fSize.w,
+    frameH: fSize.h,
+    directionsHref: directions ? directions.getAttribute("href") : "",
+    directionsTarget: directions ? directions.getAttribute("target") : "",
+    directionsText: directions ? directions.textContent.trim() : "",
   };
 });
-check("exactly one gather section", gather.gatherCount === 1, `count=${gather.gatherCount}`);
-check("gather renders exactly one venue block", gather.venueRendererCount === 1,
-  `count=${gather.venueRendererCount}`);
-check("gather heading is 'Where We Gather'", gather.gatherHeading === "Where We Gather", gather.gatherHeading);
-check("gather address is the original SCA text",
-  /Sarathi Cultural Association/.test(gather.gatherAddress) &&
-  /BBMP Ground/.test(gather.gatherAddress) &&
-  /Bengaluru/.test(gather.gatherAddress),
-  gather.gatherAddress);
-check("Events no longer contains 'Where We Gather'", !gather.eventsContainsGather);
-check("gather is OUTSIDE the Events section", !gather.gatherInsideEvents);
-check("gather is OUTSIDE the Booking section", !gather.gatherInsideBooking);
-check("gather is the LAST [data-section] block", gather.gatherIsLastSection);
-check("document order booking < gather < footer",
-  gather.tops.booking > 0 && gather.tops.gather > gather.tops.booking && gather.tops.footer > gather.tops.gather,
-  JSON.stringify(gather.tops));
+check("exactly one location section", location.locCount === 1, `count=${location.locCount}`);
+check("location label is 'Where We Are'", location.label === "Where We Are", location.label);
+check("location heading is 'Sarathi Cultural Association'",
+  location.heading === "Sarathi Cultural Association", location.heading);
+check("location place lines are the SCA ground text",
+  /BBMP Park Ground/.test(location.place) &&
+  /5th Block, Koramangala/.test(location.place) &&
+  /Bengaluru/.test(location.place),
+  location.place);
+check("location address is the full postal address",
+  /No 23, KHB Colony/.test(location.address) &&
+  /Koramangala, Bengaluru/.test(location.address) &&
+  /Karnataka 560095/.test(location.address),
+  location.address);
+check("legacy 'Where We Gather' text is fully gone", !location.wholePage.includes("Where We Gather"));
+check("location is OUTSIDE the Events section", !location.locInsideEvents);
+check("location is OUTSIDE the Booking section", !location.locInsideBooking);
+check("location is the LAST [data-section] block", location.locIsLastSection);
+check("document order booking < location < footer",
+  location.tops.booking > 0 && location.tops.location > location.tops.booking && location.tops.footer > location.tops.location,
+  JSON.stringify(location.tops));
+check("exactly one Google Maps embed in location",
+  location.mapCount === 1 && /google\.com\/maps\/embed/.test(location.mapSrc), `count=${location.mapCount}`);
+check("map iframe is responsive (fills its frame, not 600x450)",
+  Math.abs(location.mapW - location.frameW) <= 2 &&
+  Math.abs(location.mapH - location.frameH) <= 2 &&
+  location.mapW > 500,
+  `iframe=${location.mapW}x${location.mapH} frame=${location.frameW}x${location.frameH}`);
+check("GET DIRECTIONS button links to the maps link in a new tab",
+  location.directionsHref === "https://maps.app.goo.gl/RiskhyCjaqx3Grd29" &&
+  location.directionsTarget === "_blank" &&
+  location.directionsText === "Get Directions",
+  `${location.directionsText} → ${location.directionsHref}`);
 
-console.log("\n== 2. continuous wheel: Home → About → Events → Booking, no route change ==\n");
+console.log("\n== 2. continuous wheel: Home → About → Events → Booking → Location, no route change ==\n");
 const countersSeen = new Set();
 const during = [];
 const poll = async () => {
@@ -220,6 +258,7 @@ const hist0 = await page.evaluate(() => history.length);
 const aboutTop = await sectionTop("about");
 const eventsTop = await sectionTop("events");
 const bookingTop = await sectionTop("booking");
+const locationTop = await sectionTop("location");
 
 async function dockTrial(label, expectedTop, tol = 200) {
   await clickDock(label);
@@ -239,6 +278,7 @@ async function dockTrial(label, expectedTop, tol = 200) {
 await dockTrial("About", aboutTop);
 await dockTrial("Events", eventsTop);
 await dockTrial("Booking", bookingTop);
+await dockTrial("Location", locationTop);
 await dockTrial("Home", 0, 40);
 
 const hist1 = await page.evaluate(() => history.length);
@@ -291,23 +331,38 @@ const mob = await page.evaluate(() => ({
 }));
 check("no horizontal overflow on mobile", mob.sw <= mob.cw, `scrollW=${mob.sw} clientW=${mob.cw}`);
 check("native touch scrolling (no Lenis) on mobile", mob.lenis === false);
-check("mobile dock = 3 items (no About)", mob.dockItems === 3, `items=${mob.dockItems}`);
+check("mobile dock = 4 items (Home/Events/Booking/Location)", mob.dockItems === 4, `items=${mob.dockItems}`);
 check("About cinematic not mounted on mobile", mob.aboutSection < 4, `h=${mob.aboutSection}`);
 {
   const mFinal = await driveToBottom(300);
-  check("mobile wheels from top to the true bottom (gather+footer reachable)",
+  check("mobile wheels from top to the true bottom (location+footer reachable)",
     mFinal.y >= mFinal.max - 4, `y=${mFinal.y}/${mFinal.max}`);
-  const mVenue = await page.evaluate(() => ({
-    venue: !!document.querySelector(".ev-venue"),
-    footer: !!document.querySelector(".bk-footer"),
-  }));
-  check("mobile renders the gather section + footer", mVenue.venue && mVenue.footer);
+  const mLoc = await page.evaluate(() => {
+    const iframe = document.querySelector('[data-section="location"] iframe');
+    const cs = iframe ? getComputedStyle(iframe) : null;
+    return {
+      location: !!document.querySelector(".location-section"),
+      footer: !!document.querySelector(".bk-footer"),
+      iframeW: cs ? Math.round(cs.width.replace("px", "")) : -1,
+      iframeH: cs ? Math.round(cs.height.replace("px", "")) : -1,
+    };
+  });
+  check("mobile renders the location section (map) + footer",
+    mLoc.location && mLoc.footer && mLoc.iframeW > 300,
+    `w=${mLoc.iframeW} h=${mLoc.iframeH}`);
   await clickDock("Booking");
   await sleep(1500);
   const afterDock = await state();
   check("mobile dock Booking scrolls into the booking section", afterDock.y > 2000, `y=${afterDock.y}`);
+  const mLocTop = await sectionTop("location");
+  await clickDock("Location");
+  await sleep(1500);
+  const afterLoc = await state();
+  check("mobile dock Location scrolls to the location section",
+    afterLoc.y >= mLocTop - 250, `y=${afterLoc.y} (location top=${mLocTop})`);
+  check("mobile dock Location becomes active", afterLoc.active === "Location", `active=${afterLoc.active}`);
   const mFinal2 = await driveToBottom(300);
-  check("mobile wheels on past booking to the final gather/footer end",
+  check("mobile wheels on past location to the final footer end",
     mFinal2.y >= mFinal2.max - 4, `y=${mFinal2.y}/${mFinal2.max}`);
 }
 await page.setViewport({ width: 1440, height: 900 });

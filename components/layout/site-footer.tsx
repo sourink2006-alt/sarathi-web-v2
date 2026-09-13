@@ -9,9 +9,9 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
  *
  * Previously the `<footer class="bk-footer">` tail of BookingPage; relocated
  * to the root composition (2026-09-13) so the document ends BOOKING →
- * WHERE WE GATHER → FOOTER. The `.bk-footer` class (booking.css) is kept
+ * LOCATION → FOOTER. The `.bk-footer` class (booking.css) is kept
  * verbatim so the visual, including the bottom-dock clearance padding, is
- * unchanged. Must always render AFTER components/venue/venue-section.tsx.
+ * unchanged. Must always render AFTER components/venue/location-section.tsx.
  */
 export function SiteFooter() {
   const rootRef = useRef<HTMLElement>(null);

@@ -4,24 +4,11 @@
  * Page order: HERO (Events · Durga Puja 2026) → EVENT SCHEDULE (Cultural +
  * Religious).
  *
- * VENUE ("Where We Gather") was once the closing block of this page; as of
- * 2026-09-13 it is a GLOBAL FINAL SECTION composed at the root page
- * (components/venue/venue-section.tsx) after Booking and before the footer.
- * The VENUE constant still lives here as the shared content source.
- *
  * No content is invented. Every value below comes from the supplied 2026
  * programme: the SCA festival poster (performers, dance festival, amenities),
  * the typed Puja schedule (six-day ritual times) and the requested schedule
  * breakdown (Cultural 15–21 Oct, Religious 16–21 Oct; 15 Oct is cultural only).
  */
-
-export const VENUE = {
-  association: "Sarathi Cultural Association",
-  ground: "BBMP Ground",
-  block: "5th Block",
-  area: "Koramangala",
-  city: "Bengaluru",
-} as const;
 
 export const HERO = {
   kicker: "Sarathi Cultural Association",

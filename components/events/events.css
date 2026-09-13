@@ -170,45 +170,6 @@
 .ev-corner--br { right: 22px; bottom: 96px; border-right-width: 1px; border-bottom-width: 1px; }
 
 /* ============================================================
-   2 · Venue — Where We Gather
-   ============================================================ */
-
-.ev-venue {
-  position: relative;
-  text-align: center;
-  padding: clamp(90px, 12vh, 160px) 0 clamp(70px, 8vh, 110px);
-  overflow: hidden;
-}
-.ev-venue-address {
-  margin-top: 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.ev-venue-address strong {
-  font-family: var(--font-archivo);
-  font-variation-settings: "wdth" 125;
-  font-weight: 800;
-  text-transform: uppercase;
-  font-size: clamp(28px, 4.6vw, 58px);
-  line-height: 1.02;
-  color: var(--color-warm-white);
-}
-.ev-venue-address span {
-  font-family: var(--font-jakarta);
-  font-size: clamp(12px, 1.4vw, 16px);
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--color-gold);
-}
-.ev-venue-note {
-  margin-top: 26px;
-  font-family: var(--font-body);
-  font-size: 13px;
-  color: rgba(216, 205, 182, 0.7);
-}
-
-/* ============================================================
    3 · Event Schedule
    ============================================================ */
 

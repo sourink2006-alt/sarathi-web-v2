@@ -1,0 +1,100 @@
+/*
+ * Location — final global section of the continuous root document.
+ *
+ * Replaces the former "Where We Gather" venue block (2026-09-13): same spot
+ * after Booking, before the site footer, same SCA cinematic language — big
+ * Archivo display caps, gold Jakarta track, hairlines, warm-white on night,
+ * data-reveal animation (GSAP, reduced-motion short-circuits). Label uses the
+ * shared `.ev-kicker` print style (events.css, loaded app-wide).
+ */
+.location-section {
+  position: relative;
+  padding: clamp(96px, 14vh, 190px) 0 clamp(88px, 12vh, 150px);
+  overflow: hidden;
+}
+
+.location-grid {
+  width: min(1180px, 92vw);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: clamp(40px, 6vw, 92px);
+}
+
+.location-info {
+  position: relative;
+}
+
+.location-title {
+  margin-top: 16px;
+  font-family: var(--font-archivo);
+  font-variation-settings: "wdth" 125;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: clamp(34px, 4.6vw, 62px);
+  line-height: 1.02;
+  color: var(--color-warm-white);
+  text-wrap: balance;
+}
+
+.location-place {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: var(--font-jakarta);
+  font-size: clamp(12px, 1.4vw, 16px);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--color-gold);
+}
+
+.location-rule {
+  width: 64px;
+  height: 1px;
+  margin-top: 30px;
+  background: linear-gradient(90deg, transparent, var(--color-gold), transparent);
+}
+
+.location-address {
+  margin-top: 26px;
+  font-family: var(--font-body);
+  font-style: normal;
+  font-size: 15px;
+  line-height: 1.85;
+  color: rgba(216, 205, 182, 0.85);
+}
+
+.location-directions {
+  margin-top: 34px;
+}
+
+.location-map {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(199, 155, 58, 0.25);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+  background: var(--color-night);
+}
+
+.location-map iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+@media (max-width: 767px) {
+  .location-grid {
+    grid-template-columns: 1fr;
+    gap: 42px;
+  }
+  .location-map {
+    aspect-ratio: 4 / 3;
+  }
+}
